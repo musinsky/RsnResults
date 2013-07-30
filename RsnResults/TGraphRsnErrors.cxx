@@ -63,6 +63,21 @@ TGraphRsnErrors::~TGraphRsnErrors()
   SafeDelete(fFlashMarker);
 }
 //______________________________________________________________________________
+char *TGraphRsnErrors::GetObjectInfo(Int_t px, Int_t py) const
+{
+  if (!gPad) return (char*)"";
+
+  static char info[64];
+  Float_t x = gPad->PadtoX(gPad->AbsPixeltoX(px));
+  Float_t y = gPad->PadtoY(gPad->AbsPixeltoY(py));
+  snprintf(info, 64, "x=%g, y=%g", x, y);
+  if (!fFlashMarker) return info;
+
+  snprintf(info, 64, "X[ %d ]=%g, Y[ %d ]=%g  |  x=%g, y=%g",
+           fFlashPoint, fX[fFlashPoint], fFlashPoint, fY[fFlashPoint], x, y);
+  return info;
+}
+//______________________________________________________________________________
 void TGraphRsnErrors::Paint(Option_t *chopt)
 {
   TGraphErrors::Paint(chopt);
@@ -94,20 +109,6 @@ Int_t TGraphRsnErrors::DistancetoPrimitive(Int_t px, Int_t py)
 
   if (fFlashPoint != prevp) FlashPoint(kTRUE);
   return ret;
-}
-//______________________________________________________________________________
-char *TGraphRsnErrors::GetObjectInfo(Int_t px, Int_t py) const
-{
-  return TGraphErrors::GetObjectInfo(px, py);
-  // ToDo
-  //  if (!gPad) return (char *)"";
-  //  static char info[64];
-  //  Double_t x = gPad->AbsPixeltoX(px);
-  //  Double_t y = gPad->AbsPixeltoY(py);
-  //  const char *xy = "X";
-  //  if (strstr(GetTitle(), "y") || strstr(GetTitle(), "Y")) xy = "Y";
-  //  sprintf(info, "Z=%7.2f, %s=%7.2f [cm]", gPad->PadtoX(x), xy, gPad->PadtoY(y));
-  //  return info;
 }
 //______________________________________________________________________________
 void TGraphRsnErrors::SetShowHisto(Option_t* option)
