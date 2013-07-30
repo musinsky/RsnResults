@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-07-29
+// Date:    2013-07-30
 
 #ifndef GRAPHRSNERRORS_H
 #define GRAPHRSNERRORS_H
@@ -19,15 +19,16 @@ public:
   TGraphRsnErrors(const char *filename, const char *format = "%lg %lg %lg %lg", Option_t *option = "");
   virtual ~TGraphRsnErrors();
 
+  virtual void  Paint(Option_t *chopt = "");
   virtual Int_t DistancetoPrimitive(Int_t px, Int_t py);
-  virtual void  Draw(Option_t *chopt = "");
   virtual char *GetObjectInfo(Int_t px, Int_t py) const;
 
   void          SetShowHisto(Option_t *option = ""); // *MENU*
-  void          ShowHisto(Option_t *option = "") const;
   void          FlashPoint(Bool_t flash);
 
 protected:
+  void          ShowHisto(Option_t *option = "") const;
+  //  void          FlashPoint(Bool_t flash);
 
 private:
   Int_t         fFlashPoint;        // !

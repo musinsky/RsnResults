@@ -1,18 +1,14 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-07-29
+// Date:    2013-07-30
 
 #include <TCanvas.h>
 #include <TGClient.h>
 #include <TQObject.h>
-#include <TGraphPainter.h>
-#include <TPad.h>
 #include <TLatex.h>
 #include <TROOT.h>
 #include <TDatime.h>
-#include <TVirtualPad.h>
 #include <TMarker.h>
-#include <TAttMarker.h>
 
 #include "TGraphRsnErrors.h"
 
@@ -67,10 +63,17 @@ TGraphRsnErrors::~TGraphRsnErrors()
   SafeDelete(fFlashMarker);
 }
 //______________________________________________________________________________
-void TGraphRsnErrors::Draw(Option_t *chopt)
+void TGraphRsnErrors::Paint(Option_t *chopt)
 {
-  TGraphErrors::Draw(chopt);
-  if (fFlashMarker) fFlashMarker->Draw();
+  TGraphErrors::Paint(chopt);
+
+  if (!fFlashMarker) return;
+  fFlashMarker->SetMarkerColor(GetMarkerColor());
+  fFlashMarker->SetMarkerStyle(GetMarkerStyle());
+  fFlashMarker->SetMarkerSize(GetMarkerSize()*1.75);
+  fFlashMarker->SetX(fX[fFlashPoint]);
+  fFlashMarker->SetY(fY[fFlashPoint]);
+  fFlashMarker->Paint(chopt);
 }
 //______________________________________________________________________________
 Int_t TGraphRsnErrors::DistancetoPrimitive(Int_t px, Int_t py)
@@ -116,10 +119,10 @@ void TGraphRsnErrors::SetShowHisto(Option_t* option)
   TCanvas *c = new TCanvas("c_graph", GetTitle(), gClient->GetDisplayWidth()-ww, 0, ww, ww*1.20);
   c->Connect("Closed()", "TGraphRsnErrors", this, "FlashPoint(=kFALSE)"); // emitted 2x signal ?!
   TString opt = option;
-  c->Divide(2, 3, 0.001, 0.001);
+  c->Divide(2, 2, 0.001, 0.001);
   c->GetPad(3)->SetGrid();
-  c->GetPad(4)->SetGrid();
   if (save) save->cd();
+
   fFlashPoint = 0; // first point from graph
   FlashPoint(kTRUE);
 }
@@ -133,7 +136,8 @@ void TGraphRsnErrors::ShowHisto(Option_t * /*option*/) const
   TDatime today;
   TLatex latex;
   c->cd(1);
-  latex.SetTextSize(0.05);
+  latex.SetTextSize(0.075);
+  latex.SetTextAlign(22);
   latex.DrawLatex(0.5, 0.5, today.AsString());
   c->Update();
   if (save) save->cd();
@@ -152,13 +156,8 @@ void TGraphRsnErrors::FlashPoint(Bool_t flash)
     if (!fFlashMarker) {
       fFlashMarker = new TMarker(fX[fFlashPoint], fY[fFlashPoint], GetMarkerStyle());
       fFlashMarker->SetBit(kCannotPick);
-      fFlashMarker->Draw();
+      //      fFlashMarker->Draw();
     }
-    fFlashMarker->SetMarkerStyle(GetMarkerStyle());
-    fFlashMarker->SetMarkerSize(GetMarkerSize()*1.66);
-    fFlashMarker->SetMarkerColor(GetMarkerColor());
-    fFlashMarker->SetX(fX[fFlashPoint]);
-    fFlashMarker->SetY(fY[fFlashPoint]);
     ShowHisto();
   }
 
