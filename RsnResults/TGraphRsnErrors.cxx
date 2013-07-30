@@ -12,6 +12,8 @@
 
 #include "TGraphRsnErrors.h"
 
+Bool_t TGraphRsnErrors::fgAroundFlash = kTRUE;
+
 ClassImp(TGraphRsnErrors)
 
 //______________________________________________________________________________
@@ -63,6 +65,20 @@ TGraphRsnErrors::~TGraphRsnErrors()
   SafeDelete(fFlashMarker);
 }
 //______________________________________________________________________________
+void TGraphRsnErrors::AroundFlash(Bool_t around)
+{
+  // Set flag to finding flash point around (XY) or along (X) graph point
+
+  // static function
+  fgAroundFlash = around;
+}
+//______________________________________________________________________________
+Bool_t TGraphRsnErrors::IsAroundFlash()
+{
+  // static function
+  return fgAroundFlash;
+}
+//______________________________________________________________________________
 char *TGraphRsnErrors::GetObjectInfo(Int_t px, Int_t py) const
 {
   if (!gPad) return (char*)"";
@@ -97,12 +113,15 @@ Int_t TGraphRsnErrors::DistancetoPrimitive(Int_t px, Int_t py)
   if (!fFlashMarker) return ret;
   if (ret == 9999) return ret; // point is not in the graph area
 
-  Int_t pxp, dx, dxmax = 10, prevp = fFlashPoint;
+  Int_t pxp, pyp, dx, dxy, d, dmax = 50, prevp = fFlashPoint;
   for (Int_t i = 0; i < fNpoints; i++) {
     pxp = gPad->XtoAbsPixel(gPad->XtoPad(fX[i]));
+    pyp = gPad->YtoAbsPixel(gPad->YtoPad(fY[i]));
     dx  = TMath::Abs(pxp-px);
-    if (dx < dxmax) {
-      dxmax = dx;
+    dxy = TMath::Abs(pyp-py) + dx;
+    d   = (fgAroundFlash) ? dxy : dx;
+    if (d < dmax) {
+      dmax = d;
       fFlashPoint = i;
     }
   }
@@ -157,7 +176,7 @@ void TGraphRsnErrors::FlashPoint(Bool_t flash)
     if (!fFlashMarker) {
       fFlashMarker = new TMarker(fX[fFlashPoint], fY[fFlashPoint], GetMarkerStyle());
       fFlashMarker->SetBit(kCannotPick);
-      //      fFlashMarker->Draw();
+      //      fFlashMarker->Draw(); // don't need to add to gPad primitives
     }
     ShowHisto();
   }

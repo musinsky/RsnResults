@@ -19,6 +19,9 @@ public:
   TGraphRsnErrors(const char *filename, const char *format = "%lg %lg %lg %lg", Option_t *option = "");
   virtual ~TGraphRsnErrors();
 
+  static void   AroundFlash(Bool_t around = kTRUE);
+  static Bool_t IsAroundFlash();
+
   virtual char *GetObjectInfo(Int_t px, Int_t py) const;
   virtual void  Paint(Option_t *chopt = "");
   virtual Int_t DistancetoPrimitive(Int_t px, Int_t py);
@@ -33,6 +36,7 @@ protected:
 private:
   Int_t         fFlashPoint;        // !
   TMarker      *fFlashMarker;       // !
+  static Bool_t fgAroundFlash;      // !
 
   ClassDef(TGraphRsnErrors, 1) // GraphRsnErrors class
 };
