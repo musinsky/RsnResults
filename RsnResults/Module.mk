@@ -1,6 +1,6 @@
 # module for RsnResults
 # Author: Jan Musinsky
-# Date:   2013-07-29
+# Date:   2013-08-10
 
 MODULE	= RsnResults
 MODDIR	= RsnResults
@@ -15,9 +15,9 @@ DICTO	= $(DICT:.$(SrcSuf)=.$(ObjSuf))
 OBJS	= $(patsubst %.$(SrcSuf),$(TMPDIR)/%.$(ObjSuf),$(SRCS))
 MODLIB	= $(LIBDIR)/$(LIBPREFIX)$(MODULE).$(DllSuf)
 
-RSNRESULTS := $(OBJS) $(DICTO)
+RSNRESULTS := $(OBJS) $(DICT) $(DICTH) $(DICTO)
 ifeq (distclean,$(findstring distclean,$(MAKECMDGOALS)))
-RSNRESULTS += $(DICT) $(DICTH) $(MODLIB)
+RSNRESULTS += $(MODLIB) $(subst $(MODDIR)/,$(INCDIR)/,$(HDRS)) # '/' important
 endif
 
 # used in the main Makefile

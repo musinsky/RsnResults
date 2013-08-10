@@ -1,6 +1,6 @@
 # Top level Makefile for RsnResults
 # Author: Jan Musinsky
-# Date:   2013-07-29
+# Date:   2013-08-10
 
 include $(ROOTSYS)/etc/Makefile.arch
 HdrSuf		= h
@@ -21,11 +21,12 @@ LIBPREFIX	= lib
 DISTSRCNAME	= RsnResults_$(shell date +%F).source
 MAKEDEPEND	= rmkdepend
 DEPENDFILE	= $(TMPDIR)/Make-depend
+NODEPEND        = clean distclean distsrc
 
 # all
 ALLHDRS		:=
 ALLLIBS		:=
-ALLDIST		:=
+ALLDIST		:= Makefile
 ALLDEPEND	:=
 
 # verbatim variables
@@ -77,15 +78,16 @@ updateinc:	$(ALLHDRS) # only for linux
 debug:		all
 
 clean:
-		@rm -fv $(TMPDIR)/*.so $(TMPDIR)/*.d
+		@rm -fv $(DEPENDFILE) $(DEPENDFILE).bak \
+		  $(TMPDIR)/*.so $(TMPDIR)/*.d # foreign build files
 
 distclean:	clean
 
 distsrc:
-		@rm -f $(DISTSRCNAME).tar.gz;
-		@tar --ignore-failed-read -czvf $(DISTSRCNAME).tar.gz \
-		  $(ALLDIST) Makefile *.C;
-		@echo -e "\n$(DISTSRCNAME).tar.gz done\n"
+		@rm -f $(DISTSRCNAME).tar.xz;
+		@tar --ignore-failed-read -cJvf $(DISTSRCNAME).tar.xz \
+		  $(ALLDIST) *.C;
+		@echo -e "\n$(DISTSRCNAME).tar.xz done\n"
 
 $(DEPENDFILE):	$(ALLDEPEND)
 		$(emptyfile)
@@ -93,4 +95,6 @@ $(DEPENDFILE):	$(ALLDEPEND)
 		-- $(CXXFLAGS) -- $^ 2>/dev/null
 		@echo "$@ done"
 
+ifeq (,$(findstring $(MAKECMDGOALS),$(NODEPEND)))
 -include $(DEPENDFILE)
+endif
