@@ -1,10 +1,10 @@
 # module for RsnResults
 # Author: Jan Musinsky
-# Date:   2013-08-10
+# Date:   2013-08-12
 
 MODULE	= RsnResults
 MODDIR	= RsnResults
-FILES	= TRsnResults TGraphRsnErrors
+FILES	= TRsnResults TRsnGroup TGraphRsnErrors
 
 LNKDEF	= $(MODDIR)/$(LNKFILE).$(HdrSuf)
 SRCS	= $(patsubst %,$(MODDIR)/%.$(SrcSuf),$(FILES))

@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class TRsnResults+;
+#pragma link C++ class TRsnGroup+;
 #pragma link C++ class TGraphRsnErrors+;
 
 #endif
