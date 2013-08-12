@@ -17,6 +17,11 @@ public:
   TRsnGroup(const char *filename, const char *format = "%lg %lg %lg %lg", Option_t *option = "");
   virtual ~TRsnGroup();
 
+  virtual void  Flash(Option_t *option = "");
+
+  void          AddAtFragment(TObject* obj, Int_t idx);
+  TObjArray    *GetListOfFragments() const { return fFragments; }
+
 private:
   TObjArray    *fFragments;
 

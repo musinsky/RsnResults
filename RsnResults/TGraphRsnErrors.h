@@ -27,15 +27,17 @@ public:
   static void    AroundFlash(Bool_t around = kTRUE);
   static Bool_t  IsAroundFlash();
   virtual void   SetShowFlash(Bool_t set = kTRUE, Option_t *option = ""); // *MENU*
-  virtual void   Flash(Option_t *option = "") const;
+  virtual Bool_t GetShowFlash() const { return fFlashMarker ? kTRUE : kFALSE; }
+  virtual void   Flash(Option_t *option = "");
 
 protected:
-  void           FlashPoint(Bool_t flash, Option_t *option = "");
+  Int_t          fFlashPoint;        // !
+  static Bool_t  fgAroundFlash;      // !
 
 private:
-  Int_t         fFlashPoint;        // !
-  TMarker      *fFlashMarker;       // !
-  static Bool_t fgAroundFlash;      // !
+  TMarker       *fFlashMarker;       // !
+
+  void           FlashPoint(Bool_t flash, Option_t *option = "");
 
   ClassDef(TGraphRsnErrors, 1) // GraphRsnErrors class
 };

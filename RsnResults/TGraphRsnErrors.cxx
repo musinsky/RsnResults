@@ -130,11 +130,11 @@ Bool_t TGraphRsnErrors::IsAroundFlash()
 void TGraphRsnErrors::SetShowFlash(Bool_t set, Option_t *option)
 {
   if (!set) {
-    FlashPoint(kFALSE);
+    FlashPoint(kFALSE, option);
     return;
   }
   if (fFlashMarker) {
-    Flash(option); // only to change option
+    Flash(option); // only to change option in derived class
     return;
   }
 
@@ -150,6 +150,7 @@ void TGraphRsnErrors::FlashPoint(Bool_t flash, Option_t *option)
       fFlashMarker = 0;
       fFlashPoint = 0;
     }
+    Flash(option); // flash disabled
   }
   else {
     if (!fFlashMarker) {
@@ -157,7 +158,7 @@ void TGraphRsnErrors::FlashPoint(Bool_t flash, Option_t *option)
       fFlashMarker->SetBit(kCannotPick);
       //      fFlashMarker->Draw(); // don't need to add to gPad primitives
     }
-    Flash(option);
+    Flash(option); // flash enabled
   }
 
   if (gPad) {
@@ -166,9 +167,9 @@ void TGraphRsnErrors::FlashPoint(Bool_t flash, Option_t *option)
   }
 }
 //______________________________________________________________________________
-void TGraphRsnErrors::Flash(Option_t * /*option*/) const
+void TGraphRsnErrors::Flash(Option_t * /*option*/)
 {
   // This method must be overridden if an object has to react to Flash
+
   // AbstractMethod("Flash");
 }
-//______________________________________________________________________________
