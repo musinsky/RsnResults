@@ -1,13 +1,8 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-07-30
+// Date:    2013-08-12
 
-#include <TCanvas.h>
-#include <TGClient.h>
-#include <TQObject.h>
-#include <TLatex.h>
-#include <TROOT.h>
-#include <TDatime.h>
+#include <TPad.h>
 #include <TMarker.h>
 
 #include "TGraphRsnErrors.h"
@@ -65,20 +60,6 @@ TGraphRsnErrors::~TGraphRsnErrors()
   SafeDelete(fFlashMarker);
 }
 //______________________________________________________________________________
-void TGraphRsnErrors::AroundFlash(Bool_t around)
-{
-  // Set flag to finding flash point around (XY) or along (X) graph point
-
-  // static function
-  fgAroundFlash = around;
-}
-//______________________________________________________________________________
-Bool_t TGraphRsnErrors::IsAroundFlash()
-{
-  // static function
-  return fgAroundFlash;
-}
-//______________________________________________________________________________
 char *TGraphRsnErrors::GetObjectInfo(Int_t px, Int_t py) const
 {
   if (!gPad) return (char*)"";
@@ -101,6 +82,8 @@ void TGraphRsnErrors::Paint(Option_t *chopt)
   if (!fFlashMarker) return;
   fFlashMarker->SetMarkerColor(GetMarkerColor());
   fFlashMarker->SetMarkerStyle(GetMarkerStyle());
+  // visibility of dots markers
+  if (fFlashMarker->GetMarkerStyle() < 20) fFlashMarker->SetMarkerStyle(20);
   fFlashMarker->SetMarkerSize(GetMarkerSize()*1.75);
   fFlashMarker->SetX(fX[fFlashPoint]);
   fFlashMarker->SetY(fY[fFlashPoint]);
@@ -130,40 +113,36 @@ Int_t TGraphRsnErrors::DistancetoPrimitive(Int_t px, Int_t py)
   return ret;
 }
 //______________________________________________________________________________
-void TGraphRsnErrors::SetShowHisto(Option_t* option)
+void TGraphRsnErrors::AroundFlash(Bool_t around)
 {
-  if (fFlashMarker) return;
+  // Set flag to finding flash point around (XY) or along (X) graph point
 
-  TVirtualPad *save = gPad;
-  Int_t ww = 610;
-  TCanvas *c = new TCanvas("c_graph", GetTitle(), gClient->GetDisplayWidth()-ww, 0, ww, ww*1.20);
-  c->Connect("Closed()", "TGraphRsnErrors", this, "FlashPoint(=kFALSE)"); // emitted 2x signal ?!
-  TString opt = option;
-  c->Divide(2, 2, 0.001, 0.001);
-  c->GetPad(3)->SetGrid();
-  if (save) save->cd();
-
-  fFlashPoint = 0; // first point from graph
-  FlashPoint(kTRUE);
+  // static function
+  fgAroundFlash = around;
 }
 //______________________________________________________________________________
-void TGraphRsnErrors::ShowHisto(Option_t * /*option*/) const
+Bool_t TGraphRsnErrors::IsAroundFlash()
 {
-  TVirtualPad *save = gPad;
-  TCanvas *c = (TCanvas *)gROOT->GetListOfCanvases()->FindObject("c_graph");
-  if (!c) return;
-  c->Clear("D");
-  TDatime today;
-  TLatex latex;
-  c->cd(1);
-  latex.SetTextSize(0.075);
-  latex.SetTextAlign(22);
-  latex.DrawLatex(0.5, 0.5, today.AsString());
-  c->Update();
-  if (save) save->cd();
+  // static function
+  return fgAroundFlash;
 }
 //______________________________________________________________________________
-void TGraphRsnErrors::FlashPoint(Bool_t flash)
+void TGraphRsnErrors::SetShowFlash(Bool_t set, Option_t *option)
+{
+  if (!set) {
+    FlashPoint(kFALSE);
+    return;
+  }
+  if (fFlashMarker) {
+    Flash(option); // only to change option
+    return;
+  }
+
+  fFlashPoint = 0; // starting with first point from graph
+  FlashPoint(kTRUE, option);
+}
+//______________________________________________________________________________
+void TGraphRsnErrors::FlashPoint(Bool_t flash, Option_t *option)
 {
   if (!flash) {
     if (fFlashMarker) {
@@ -178,12 +157,18 @@ void TGraphRsnErrors::FlashPoint(Bool_t flash)
       fFlashMarker->SetBit(kCannotPick);
       //      fFlashMarker->Draw(); // don't need to add to gPad primitives
     }
-    ShowHisto();
+    Flash(option);
   }
 
   if (gPad) {
     gPad->Update();
     gPad->Modified();
   }
+}
+//______________________________________________________________________________
+void TGraphRsnErrors::Flash(Option_t * /*option*/) const
+{
+  // This method must be overridden if an object has to react to Flash
+  // AbstractMethod("Flash");
 }
 //______________________________________________________________________________
