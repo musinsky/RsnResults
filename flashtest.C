@@ -1,4 +1,9 @@
+// Jan Musinsky, Martin Vala
+// 2013-10-21
+
 #ifndef __CINT__
+#include <TH1.h>
+#include <TRandom.h>
 
 void test()
 #endif

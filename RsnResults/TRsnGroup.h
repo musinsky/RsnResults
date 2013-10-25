@@ -1,11 +1,13 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-08-12
+// Date:    2013-10-25
 
 #ifndef RSNGROUP_H
 #define RSNGROUP_H
 
 #include "TGraphRsnErrors.h"
+
+class THashList;
 
 class TRsnGroup : public TGraphRsnErrors {
 
@@ -21,9 +23,13 @@ public:
 
   void          AddAtFragment(TObject* obj, Int_t idx);
   TObjArray    *GetListOfFragments() const { return fFragments; }
+  Int_t         AddElementLabel(const char *label);
+  const char   *GetElementLabel(Int_t element) const;
+  Int_t         FindElement(const char *label) const;
 
 private:
   TObjArray    *fFragments;
+  THashList    *fElemetLabels;
 
   ClassDef(TRsnGroup, 1) // RsnGroup class
 };
