@@ -23,13 +23,13 @@ public:
 
   void          AddAtFragment(TObject* obj, Int_t idx);
   TObjArray    *GetListOfFragments() const { return fFragments; }
-  Int_t         AddElementLabel(const char *label);
+  void          SetElementLabel(Int_t element, const char *label); // private !!!!
   const char   *GetElementLabel(Int_t element) const;
-  Int_t         FindElement(const char *label) const;
+  Int_t         FindElementLabel(const char *label) const;
 
 private:
   TObjArray    *fFragments;
-  THashList    *fElemetLabels;
+  THashList    *fElementLabels;
 
   ClassDef(TRsnGroup, 1) // RsnGroup class
 };

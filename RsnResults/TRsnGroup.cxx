@@ -17,7 +17,7 @@ ClassImp(TRsnGroup)
 TRsnGroup::TRsnGroup()
 : TGraphRsnErrors(),
   fFragments(0),
-  fElemetLabels(0)
+  fElementLabels(0)
 {
   // Default constructor
 }
@@ -25,7 +25,7 @@ TRsnGroup::TRsnGroup()
 TRsnGroup::TRsnGroup(Int_t n)
 : TGraphRsnErrors(n),
   fFragments(0),
-  fElemetLabels(0)
+  fElementLabels(0)
 {
   // Normal constructor
 }
@@ -34,7 +34,7 @@ TRsnGroup::TRsnGroup(Int_t n, const Float_t *x, const Float_t *y,
                      const Float_t *ex, const Float_t *ey)
 : TGraphRsnErrors(n, x, y, ex, ey),
   fFragments(0),
-  fElemetLabels(0)
+  fElementLabels(0)
 {
   // Normal constructor
 }
@@ -43,7 +43,7 @@ TRsnGroup::TRsnGroup(Int_t n, const Double_t *x, const Double_t *y,
                      const Double_t *ex, const Double_t *ey)
 : TGraphRsnErrors(n, x, y, ex, ey),
   fFragments(0),
-  fElemetLabels(0)
+  fElementLabels(0)
 {
   // Normal constructor
 }
@@ -51,7 +51,7 @@ TRsnGroup::TRsnGroup(Int_t n, const Double_t *x, const Double_t *y,
 TRsnGroup::TRsnGroup(const char *filename, const char *format, Option_t *option)
 : TGraphRsnErrors(filename, format, option),
   fFragments(0),
-  fElemetLabels(0)
+  fElementLabels(0)
 {
   // Constructor reading input from filename
 }
@@ -59,8 +59,8 @@ TRsnGroup::TRsnGroup(const char *filename, const char *format, Option_t *option)
 TRsnGroup::~TRsnGroup()
 {
   // Destructor
-  SafeDelete(fFragments);    // objects are not deleted
-  SafeDelete(fElemetLabels); // objects are deleted (is owner)
+  SafeDelete(fFragments);     // objects are not deleted
+  SafeDelete(fElementLabels); // objects are deleted (is owner)
 }
 //______________________________________________________________________________
 void TRsnGroup::Flash(Option_t *option)
@@ -99,43 +99,46 @@ void TRsnGroup::Flash(Option_t *option)
 void TRsnGroup::AddAtFragment(TObject* obj, Int_t idx)
 {
   if (fNpoints <= 0) return;
-  if (!fFragments) fFragments = new TObjArray(fNpoints);
+  if (!fFragments) {
+    fFragments = new TObjArray(fNpoints);
+    fFragments->SetName("Fragments");
+    // ?! owner (destructor)
+  }
   fFragments->AddAt(obj, idx);
 }
 //______________________________________________________________________________
-Int_t TRsnGroup::AddElementLabel(const char *label)
+void TRsnGroup::SetElementLabel(Int_t element, const char *label)
 {
-  if (!fElemetLabels) {
-    fElemetLabels = new THashList();
-    fElemetLabels->SetOwner(kTRUE);
+  if (!fElementLabels) {
+    fElementLabels = new THashList();
+    fElementLabels->SetName("ElementLabels");
+    fElementLabels->SetOwner(kTRUE);
   }
-  else if (FindElement(label) >= 0) {
-    Warning("AddElementLabel", "already exist element label %s", label);
-    return -1;
+  else if (FindElementLabel(label) >= 0) { // pred vytvorenim hashlist !!!!!!!!!
+    Warning("SetElementLabel", "already exist element label %s", label);
+    return;
   }
 
   TObjString *obj = new TObjString(label);
-  fElemetLabels->Add(obj);
-  // objarry from fragment !!!!
-  // obj->SetUniqueID((UInt_t)fElemetLabels->GetSize() - 1);   // !!! objarray->Getlast() OKOK !!!
-  return (Int_t)obj->GetUniqueID();
+  obj->SetUniqueID((UInt_t)element);
+  fElementLabels->Add(obj);
 }
 //______________________________________________________________________________
 const char *TRsnGroup::GetElementLabel(Int_t element) const
 {
-  if (!fElemetLabels) return "";
+  if (!fElementLabels) return "";
   TObjString *obj;
-  TIter next(fElemetLabels);
+  TIter next(fElementLabels);
   while ((obj = (TObjString *)next()))
     if (((Int_t)obj->GetUniqueID()) == element) return obj->GetName();
 
   return "";
 }
 //______________________________________________________________________________
-Int_t TRsnGroup::FindElement(const char *label) const
+Int_t TRsnGroup::FindElementLabel(const char *label) const
 {
-  if (!fElemetLabels) return -1; // out of bounds
-  TObjString *obj = (TObjString *)fElemetLabels->FindObject(label);
+  if (!fElementLabels) return -1; // out of bounds
+  TObjString *obj = (TObjString *)fElementLabels->FindObject(label);
   if (obj) return (Int_t)obj->GetUniqueID();
   else return -1;
 }
