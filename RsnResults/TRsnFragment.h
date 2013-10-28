@@ -8,7 +8,6 @@
 #include <TNamed.h>
 
 class TObjArray;
-class TH1;
 
 class TRsnGroup;
 
@@ -16,12 +15,13 @@ class TRsnFragment: public TNamed {
 
 public:
   TRsnFragment();
+  TRsnFragment(Double_t min, Double_t max, TRsnGroup *group);
   virtual ~TRsnFragment();
 
-  Double_t      GetZoneMin() const { return fZoneMin; }
-  Double_t      GetZoneMax() const { return fZoneMax; }
-  Double_t      GetZoneMean() const { return (fZoneMin+fZoneMax)/2.0; }
-  Double_t      GetZoneWidth() const { return TMath::Abs(fZoneMax-fZoneMin); }
+  Double_t      GetMin() const { return fMin; }
+  Double_t      GetMax() const { return fMax; }
+  Double_t      GetMean() const { return (fMin+fMax)/2.0; }
+  Double_t      GetWidth() const { return TMath::Abs(fMax-fMin); }
   TRsnGroup    *GetGroup() const { return fGroup; }
   TObjArray    *GetListOfElements() const { return fElements; }
 
@@ -30,11 +30,12 @@ public:
   virtual void   Print(Option_t *option = "") const;
 
   void          AddElement(TObject *obj, const char *label);
-  TObject      *GetElement(const char *label) const;
+  TObject      *FindElement(Int_t idx, Bool_t direct = kFALSE) const;
+  TObject      *FindElement(const char *label) const;
 
 private:
-  Double_t      fZoneMin;
-  Double_t      fZoneMax;
+  Double_t      fMin;
+  Double_t      fMax;
   TRsnGroup    *fGroup;        // !
   TObjArray    *fElements;     // !
 

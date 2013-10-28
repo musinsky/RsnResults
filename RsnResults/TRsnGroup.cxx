@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-10-25
+// Date:    2013-10-28
 
 #include <TCanvas.h>
 #include <TROOT.h>
@@ -10,6 +10,9 @@
 #include <TObjString.h>
 
 #include "TRsnGroup.h"
+#include "TRsnFragment.h"
+
+TList *TRsnGroup::fgAllElements = 0;
 
 ClassImp(TRsnGroup)
 
@@ -59,8 +62,8 @@ TRsnGroup::TRsnGroup(const char *filename, const char *format, Option_t *option)
 TRsnGroup::~TRsnGroup()
 {
   // Destructor
-  SafeDelete(fFragments);     // objects are not deleted
-  SafeDelete(fElementLabels); // objects are deleted (is owner)
+  SafeDelete(fFragments);     // objects are deleted (IsOwner)
+  SafeDelete(fElementLabels); // objects are deleted (IsOwner)
 }
 //______________________________________________________________________________
 void TRsnGroup::Flash(Option_t *option)
@@ -96,35 +99,53 @@ void TRsnGroup::Flash(Option_t *option)
   if (save) save->cd();
 }
 //______________________________________________________________________________
+TList *TRsnGroup::GetListOfAllElements()
+{
+  // static function
+  return fgAllElements;
+}
+//______________________________________________________________________________
 void TRsnGroup::AddAtFragment(TObject* obj, Int_t idx)
 {
   if (fNpoints <= 0) return;
   if (!fFragments) {
     fFragments = new TObjArray(fNpoints);
     fFragments->SetName("Fragments");
-    // ?! owner (destructor)
+    fFragments->SetOwner(kTRUE);
   }
   fFragments->AddAt(obj, idx);
 }
 //______________________________________________________________________________
-void TRsnGroup::SetElementLabel(Int_t element, const char *label)
+TRsnFragment *TRsnGroup::MakeFragment(Double_t min, Double_t max)
 {
+  if (min > max) {
+    Error("MakeFragment", "max %f must be greater than min %f", max, min);
+    return 0;
+  }
+
+  if (!fgAllElements) {
+    fgAllElements = new TList();
+    fgAllElements->SetName("AllElements");
+    gROOT->GetListOfCleanups()->Add(fgAllElements);
+  }
+
+  if (!fFragments) {
+    fFragments = new TObjArray();
+    fFragments->SetName("Fragments");
+    fFragments->SetOwner(kTRUE);
+  }
   if (!fElementLabels) {
     fElementLabels = new THashList();
     fElementLabels->SetName("ElementLabels");
     fElementLabels->SetOwner(kTRUE);
   }
-  else if (FindElementLabel(label) >= 0) { // pred vytvorenim hashlist !!!!!!!!!
-    Warning("SetElementLabel", "already exist element label %s", label);
-    return;
-  }
 
-  TObjString *obj = new TObjString(label);
-  obj->SetUniqueID((UInt_t)element);
-  fElementLabels->Add(obj);
+  TRsnFragment *fragment = new TRsnFragment(min, max, this);
+  fFragments->Add(fragment);
+  return fragment;
 }
 //______________________________________________________________________________
-const char *TRsnGroup::GetElementLabel(Int_t element) const
+const char *TRsnGroup::FindElementLabel(Int_t element) const
 {
   if (!fElementLabels) return "";
   TObjString *obj;
@@ -140,5 +161,6 @@ Int_t TRsnGroup::FindElementLabel(const char *label) const
   if (!fElementLabels) return -1; // out of bounds
   TObjString *obj = (TObjString *)fElementLabels->FindObject(label);
   if (obj) return (Int_t)obj->GetUniqueID();
-  else return -1;
+
+  return -1;
 }
