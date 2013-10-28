@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-10-25
+// Date:    2013-10-28
 
 #include <TObjArray.h>
 #include <TH1.h>
@@ -66,37 +66,11 @@ void TRsnFragment::AddElement(TObject *obj, const char *label)
   fElements->Add(obj); // do not sort this array, must stay this order
   fGroup->SetElementLabel(fElements->GetLast(), label);
 }
-////______________________________________________________________________________
-//void TRsnFragment::AddHisto(TH1 *h, EPairKind kind, EPairType type)
-//{
-//  if (!h) return;
-//  TObjArray *harray = GetHistoArray(kind, kTRUE);
-//  if (!harray) return;
-//
-//  TObject *prev = harray->At(type);
-//  if (prev) Warning("AddHisto", "histo %s replaced by %s", prev->GetName(), h->GetName());
-//
-//  TString name;
-//  switch (type) {
-//    case kUnlike:   name = "unlike";   break;
-//    case kUnlikePM: name = "unlikePM"; break;
-//    case kUnlikeMP: name = "unlikeMP"; break;
-//    case kLike:     name = "like";     break;
-//    case kLikePP:   name = "likePP";   break;
-//    case kLikeMM:   name = "likeMM";   break;
-//    default:        name = "nan";      break;
-//  }
-//
-//  h->SetName(Form("%s_%s", harray->GetName(), name.Data()));
-//  h->SetDirectory(0);
-//  h->SetBit(kMustCleanup);
-//  harray->AddAt(h, type);
-//}
-////______________________________________________________________________________
-//TH1 *TRsnFragment::GetHisto(EPairKind kind, EPairType type)
-//{
-//  TObjArray *harray = GetHistoArray(kind, kFALSE);
-//  if (!harray) return 0;
-//  return (TH1 *)harray->At(type);
-//}
-////______________________________________________________________________________
+//______________________________________________________________________________
+TObject *TRsnFragment::GetElement(const char *label) const
+{
+  if (!fGroup || !fElements) return 0;
+  Int_t idx = fGroup->FindElementLabel(label);
+  if (idx < 0) return 0;
+  return fElements->At(idx);
+}

@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-10-25
+// Date:    2013-10-28
 
 #ifndef RSNFRAGMENT_H
 #define RSNFRAGMENT_H
@@ -29,9 +29,8 @@ public:
   virtual Bool_t IsSortable() const { return kTRUE; }
   virtual void   Print(Option_t *option = "") const;
 
-  void          AddElement(TObject *obj, const char *label); // no const h->SetDirectory(0)
-  //  void          AddHisto(TH1 *h, EPairKind kind, EPairType type); //!!
-  //  TH1          *GetHisto(EPairKind kind, EPairType type); //!!
+  void          AddElement(TObject *obj, const char *label);
+  TObject      *GetElement(const char *label) const;
 
 private:
   Double_t      fZoneMin;
