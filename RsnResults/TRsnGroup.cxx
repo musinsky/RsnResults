@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-10-28
+// Date:    2013-10-30
 
 #include <TCanvas.h>
 #include <TROOT.h>
@@ -20,7 +20,7 @@ ClassImp(TRsnGroup)
 TRsnGroup::TRsnGroup()
 : TGraphRsnErrors(),
   fFragments(0),
-  fElementLabels(0)
+  fElementTags(0)
 {
   // Default constructor
 }
@@ -28,7 +28,7 @@ TRsnGroup::TRsnGroup()
 TRsnGroup::TRsnGroup(Int_t n)
 : TGraphRsnErrors(n),
   fFragments(0),
-  fElementLabels(0)
+  fElementTags(0)
 {
   // Normal constructor
 }
@@ -37,7 +37,7 @@ TRsnGroup::TRsnGroup(Int_t n, const Float_t *x, const Float_t *y,
                      const Float_t *ex, const Float_t *ey)
 : TGraphRsnErrors(n, x, y, ex, ey),
   fFragments(0),
-  fElementLabels(0)
+  fElementTags(0)
 {
   // Normal constructor
 }
@@ -46,7 +46,7 @@ TRsnGroup::TRsnGroup(Int_t n, const Double_t *x, const Double_t *y,
                      const Double_t *ex, const Double_t *ey)
 : TGraphRsnErrors(n, x, y, ex, ey),
   fFragments(0),
-  fElementLabels(0)
+  fElementTags(0)
 {
   // Normal constructor
 }
@@ -54,7 +54,7 @@ TRsnGroup::TRsnGroup(Int_t n, const Double_t *x, const Double_t *y,
 TRsnGroup::TRsnGroup(const char *filename, const char *format, Option_t *option)
 : TGraphRsnErrors(filename, format, option),
   fFragments(0),
-  fElementLabels(0)
+  fElementTags(0)
 {
   // Constructor reading input from filename
 }
@@ -62,8 +62,8 @@ TRsnGroup::TRsnGroup(const char *filename, const char *format, Option_t *option)
 TRsnGroup::~TRsnGroup()
 {
   // Destructor
-  SafeDelete(fFragments);     // objects are deleted (IsOwner)
-  SafeDelete(fElementLabels); // objects are deleted (IsOwner)
+  SafeDelete(fFragments);   // objects are deleted also
+  SafeDelete(fElementTags); // objects are deleted also
 }
 //______________________________________________________________________________
 void TRsnGroup::Flash(Option_t *option)
@@ -99,13 +99,25 @@ void TRsnGroup::Flash(Option_t *option)
   if (save) save->cd();
 }
 //______________________________________________________________________________
+void TRsnGroup::Print(Option_t * /*option*/) const
+{
+  if (!fFragments) return;
+
+  TIter next(fFragments);
+  TRsnFragment *frag;
+  while ((frag = (TRsnFragment *)next())) {
+    // ToDo aj fragment: ls() aj Print()
+  }
+}
+
+//______________________________________________________________________________
 TList *TRsnGroup::GetListOfAllElements()
 {
   // static function
   return fgAllElements;
 }
 //______________________________________________________________________________
-void TRsnGroup::AddAtFragment(TObject* obj, Int_t idx)
+void TRsnGroup::AddAtFragmentBla(TObject* obj, Int_t idx)
 {
   if (fNpoints <= 0) return;
   if (!fFragments) {
@@ -132,35 +144,40 @@ TRsnFragment *TRsnGroup::MakeFragment(Double_t min, Double_t max)
   if (!fFragments) {
     fFragments = new TObjArray();
     fFragments->SetName("Fragments");
+    // ak zmazem fragmnet tak naj zmizne z listu
     fFragments->SetOwner(kTRUE);
   }
-  if (!fElementLabels) {
-    fElementLabels = new THashList();
-    fElementLabels->SetName("ElementLabels");
-    fElementLabels->SetOwner(kTRUE);
+  if (!fElementTags) {
+    fElementTags = new THashList();
+    fElementTags->SetName("ElementTags");
+    fElementTags->SetOwner(kTRUE);
   }
 
   TRsnFragment *fragment = new TRsnFragment(min, max, this);
   fFragments->Add(fragment);
   return fragment;
 }
-//______________________________________________________________________________
-const char *TRsnGroup::FindElementLabel(Int_t element) const
-{
-  if (!fElementLabels) return "";
-  TObjString *obj;
-  TIter next(fElementLabels);
-  while ((obj = (TObjString *)next()))
-    if (((Int_t)obj->GetUniqueID()) == element) return obj->GetName();
 
-  return "";
-}
 //______________________________________________________________________________
-Int_t TRsnGroup::FindElementLabel(const char *label) const
+Int_t TRsnGroup::FindElementTag(const char *tag) const
 {
-  if (!fElementLabels) return -1; // out of bounds
-  TObjString *obj = (TObjString *)fElementLabels->FindObject(label);
+  if (!fElementTags) return -1; // out of bounds
+  TObjString *obj = (TObjString *)fElementTags->FindObject(tag);
   if (obj) return (Int_t)obj->GetUniqueID();
 
   return -1;
+}
+//______________________________________________________________________________
+const char *TRsnGroup::FindElementTag(Int_t element) const
+{
+  //  NEPOUZIVAT !!!!!!!!!!!!!!
+  if (!fElementTags) return "";
+  TObjString *obj;
+  TIter next(fElementTags);
+  while ((obj = (TObjString *)next()))
+    if (((Int_t)obj->GetUniqueID()) == element) return obj->GetName();
+
+  // return obj->GetName();   by sa malo rovnat fElementTags->At(element);
+
+  return "";
 }

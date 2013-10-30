@@ -1,5 +1,5 @@
 // Jan Musinsky, Martin Vala
-// 2013-10-21
+// 2013-10-30
 
 #ifndef __CINT__
 #include <TH1.h>
@@ -24,7 +24,7 @@ void test()
     h = new TH1D(Form("h_%02d", i), "", 100, 0, 100);
     for (Int_t j = 0; j < 1000; j++)
       h->Fill(gRandom->Gaus(100./n*i, 10.0));
-    group->AddAtFragment(h, i);
+    group->AddAtFragmentBla(h, i);
   }
 
   group->SetMarkerStyle(20);

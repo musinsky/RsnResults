@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-10-28
+// Date:    2013-10-30
 
 #ifndef RSNGROUP_H
 #define RSNGROUP_H
@@ -21,22 +21,22 @@ public:
   TRsnGroup(const char *filename, const char *format = "%lg %lg %lg %lg", Option_t *option = "");
   virtual ~TRsnGroup();
 
-  TObjArray    *GetListOfFragments() const { return fFragments; }
-  THashList    *GetElementLabels() const { return fElementLabels; }
-  static TList *GetListOfAllElements();
+  TObjArray     *GetListOfFragments() const { return fFragments; }
+  THashList     *GetElementTags() const { return fElementTags; }
+  static TList  *GetListOfAllElements();
 
-  virtual void  Flash(Option_t *option = "");
+  virtual void   Flash(Option_t *option = "");
+  virtual void   Print(Option_t *option = "") const;
 
-  void          AddAtFragment(TObject* obj, Int_t idx); // temp
-
-  TRsnFragment *MakeFragment(Double_t min, Double_t max);
-  const char   *FindElementLabel(Int_t element) const;
-  Int_t         FindElementLabel(const char *label) const;
+  void           AddAtFragmentBla(TObject* obj, Int_t idx); // temp
+  TRsnFragment  *MakeFragment(Double_t min, Double_t max);
+  Int_t          FindElementTag(const char *tag) const;
+  const char    *FindElementTag(Int_t element) const;
 
 private:
-  TObjArray    *fFragments;     // !
-  THashList    *fElementLabels; // !
-  static TList *fgAllElements;  // !
+  TObjArray     *fFragments;        // !
+  THashList     *fElementTags;      // !
+  static TList  *fgAllElements;     // !
 
   ClassDef(TRsnGroup, 1) // RsnGroup class
 };
