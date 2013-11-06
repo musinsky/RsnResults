@@ -1,13 +1,11 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-10-30
+// Date:    2013-11-06
 
 #ifndef RSNFRAGMENT_H
 #define RSNFRAGMENT_H
 
 #include <TObject.h>
-
-class TObjArray;
 
 class TRsnGroup;
 
@@ -23,7 +21,8 @@ public:
   Double_t       GetMean() const { return (fMin+fMax)/2.0; }
   Double_t       GetWidth() const { return TMath::Abs(fMax-fMin); }
   TRsnGroup     *GetGroup() const { return fGroup; }
-  TObjArray     *GetListOfElements() const { return fElements; }
+  const TObjArray *GetListOfElements() const { return fElements; }
+  static TList  *GetListOfAllElements();
 
   virtual Int_t  Compare(const TObject *obj) const;
   virtual Bool_t IsSortable() const { return kTRUE; }
@@ -38,6 +37,7 @@ private:
   Double_t       fMax;
   TRsnGroup     *fGroup;        // !
   TObjArray     *fElements;     // !
+  static TList  *fgAllElements; // !
 
   ClassDef(TRsnFragment, 1) // RsnFragment class
 };

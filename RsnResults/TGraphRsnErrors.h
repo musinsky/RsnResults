@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-10-30
+// Date:    2013-11-06
 
 #ifndef GRAPHRSNERRORS_H
 #define GRAPHRSNERRORS_H
@@ -31,11 +31,11 @@ public:
   virtual void   Flash(Option_t *option = "");
 
 protected:
-  Int_t          fFlashPoint;       // !
-  static Bool_t  fgAroundFlash;     // !
+  Int_t          fFlashPoint;   // !
+  static Bool_t  fgAroundFlash; // !
 
 private:
-  TMarker       *fFlashMarker;      // !
+  TMarker       *fFlashMarker;  // !
 
   void           FlashPoint(Bool_t flash, Option_t *option = "");
 

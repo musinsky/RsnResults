@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-10-30
+// Date:    2013-11-06
 
 #include <TCanvas.h>
 #include <TROOT.h>
@@ -11,8 +11,6 @@
 
 #include "TRsnGroup.h"
 #include "TRsnFragment.h"
-
-TList *TRsnGroup::fgAllElements = 0;
 
 ClassImp(TRsnGroup)
 
@@ -101,23 +99,19 @@ void TRsnGroup::Flash(Option_t *option)
 //______________________________________________________________________________
 void TRsnGroup::Print(Option_t * /*option*/) const
 {
-  if (!fFragments) return;
+  // ToDo: improve
+  if (!fElementTags) return;
 
-  TIter next(fFragments);
-  TRsnFragment *frag;
-  while ((frag = (TRsnFragment *)next())) {
-    // ToDo aj fragment: ls() aj Print()
+  TObjString *obj;
+  for (Int_t i = 0; i < fElementTags->GetSize(); i++) {
+    obj = (TObjString *)fElementTags->At(i);
+    if (obj) Printf("%02d  %02d  %s \t %02d  %s", i, (Int_t)obj->GetUniqueID(), obj->GetName(),
+                    FindElementTag(FindElementTag(i)), FindElementTag(i));
+    else     Printf("%02d  %s \t %s", i, FindElementTag(i), "empty slot (impossible)");
   }
 }
-
 //______________________________________________________________________________
-TList *TRsnGroup::GetListOfAllElements()
-{
-  // static function
-  return fgAllElements;
-}
-//______________________________________________________________________________
-void TRsnGroup::AddAtFragmentBla(TObject* obj, Int_t idx)
+void TRsnGroup::AddAtFragmentBla(TObject *obj, Int_t idx)
 {
   if (fNpoints <= 0) return;
   if (!fFragments) {
@@ -131,53 +125,63 @@ void TRsnGroup::AddAtFragmentBla(TObject* obj, Int_t idx)
 TRsnFragment *TRsnGroup::MakeFragment(Double_t min, Double_t max)
 {
   if (min > max) {
-    Error("MakeFragment", "max %f must be greater than min %f", max, min);
+    Error("MakeFragment", "max %f must be greater or equal than min %f", max, min);
     return 0;
-  }
-
-  if (!fgAllElements) {
-    fgAllElements = new TList();
-    fgAllElements->SetName("AllElements");
-    gROOT->GetListOfCleanups()->Add(fgAllElements);
   }
 
   if (!fFragments) {
     fFragments = new TObjArray();
     fFragments->SetName("Fragments");
-    // ak zmazem fragmnet tak naj zmizne z listu
     fFragments->SetOwner(kTRUE);
+    gROOT->GetListOfCleanups()->Add(fFragments);
   }
+
+  TRsnFragment *fragment = new TRsnFragment(min, max, this);
+  fragment->SetBit(kMustCleanup); // recursive remove from fFragments
+  fFragments->Add(fragment);
+  return fragment;
+}
+//______________________________________________________________________________
+Int_t TRsnGroup::AddElementTag(const char *tag)
+{
+  if (FindElementTag(tag) >= 0) {
+    Warning("AddElementTag", "already exist tag with name: %s in group", tag);
+    return -1; // out of bounds
+  }
+
   if (!fElementTags) {
     fElementTags = new THashList();
     fElementTags->SetName("ElementTags");
     fElementTags->SetOwner(kTRUE);
   }
 
-  TRsnFragment *fragment = new TRsnFragment(min, max, this);
-  fFragments->Add(fragment);
-  return fragment;
+  TObjString *obj = new TObjString(tag);
+  fElementTags->Add(obj);
+  Int_t idx = fElementTags->LastIndex(); // GetLast != GetSize if tag name are not unique
+  obj->SetUniqueID((UInt_t)idx);
+  return idx;
 }
-
 //______________________________________________________________________________
 Int_t TRsnGroup::FindElementTag(const char *tag) const
 {
+  // fast find a tag
+  // return list->IndexOf(list->FindObject(tag)); // slowly (2x looping)
+
   if (!fElementTags) return -1; // out of bounds
   TObjString *obj = (TObjString *)fElementTags->FindObject(tag);
   if (obj) return (Int_t)obj->GetUniqueID();
-
   return -1;
 }
 //______________________________________________________________________________
-const char *TRsnGroup::FindElementTag(Int_t element) const
+const char *TRsnGroup::FindElementTag(Int_t idx) const
 {
-  //  NEPOUZIVAT !!!!!!!!!!!!!!
   if (!fElementTags) return "";
-  TObjString *obj;
   TIter next(fElementTags);
+  TObjString *obj;
   while ((obj = (TObjString *)next()))
-    if (((Int_t)obj->GetUniqueID()) == element) return obj->GetName();
-
-  // return obj->GetName();   by sa malo rovnat fElementTags->At(element);
-
+    if (((Int_t)obj->GetUniqueID()) == idx) return obj->GetName();
   return "";
+
+  // same as
+  // return fElementTags->At(idx)->GetName();
 }

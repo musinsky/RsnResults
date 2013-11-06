@@ -1,16 +1,16 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-10-30
+// Date:    2013-11-06
 
 #include <TObjArray.h>
-#include <THashList.h>
-#include <TObjString.h>
-#include <TString.h>
+#include <TROOT.h>
 #include <TClass.h>
 #include <TH1.h>
 
 #include "TRsnFragment.h"
 #include "TRsnGroup.h"
+
+TList *TRsnFragment::fgAllElements = 0;
 
 ClassImp(TRsnFragment)
 
@@ -56,7 +56,8 @@ Int_t TRsnFragment::Compare(const TObject *obj) const
 //______________________________________________________________________________
 void TRsnFragment::Print(Option_t * /*option*/) const
 {
-  if (!fElements) return;
+  // ToDo: improve
+  if (!fGroup || !fElements) return;
 
   TObject *obj;
   for (Int_t i = 0; i < fElements->GetEntriesFast(); i++) {
@@ -67,16 +68,29 @@ void TRsnFragment::Print(Option_t * /*option*/) const
   }
 }
 //______________________________________________________________________________
+TList *TRsnFragment::GetListOfAllElements()
+{
+  // static function
+  return fgAllElements;
+}
+//______________________________________________________________________________
 void TRsnFragment::AddElement(TObject *obj, const char *tag)
 {
-  if (!obj) return;
+  if (!obj) {
+    Error("AddElement", "object is null");
+    return;
+  }
+  if (!obj->IsOnHeap()) {
+    SysError("AddElement", "object is not on the heap");
+    return;
+  }
   if (!fGroup) {
-    Error("AddElement", "fragment without parent group");
+    Error("AddElement", "fragment without a parent group");
     return;
   }
 
   if (FindElement(tag)) {
-    Error("AddElement", "already exist element with tag: %s in fragment", tag);
+    Warning("AddElement", "already exist element with tag: %s in fragment", tag);
     return;
   }
 
@@ -86,30 +100,27 @@ void TRsnFragment::AddElement(TObject *obj, const char *tag)
     fElements->SetOwner(kTRUE);
   }
   else if (fElements->Contains(obj)) {
-    Error("AddElement", "already exist element: %s in fragment", obj->GetName());
+    Warning("AddElement", "already exist element: %s in fragment", obj->GetName());
     return;
   }
 
-  if (TRsnGroup::GetListOfAllElements()->Contains(obj)) {
-    Error("AddElement", "already exist element: %s in another fragment", obj->GetName());
+  if (!fgAllElements) {
+    fgAllElements = new TList();
+    fgAllElements->SetName("AllElements");
+    gROOT->GetListOfCleanups()->Add(fgAllElements);
+  }
+  else if (fgAllElements->Contains(obj)) {
+    Warning("AddElement", "already exist element: %s in another fragment", obj->GetName());
     return;
   }
 
+  // ToDo: LockTags, new tag only from group
   Int_t idx = fGroup->FindElementTag(tag);
-  if (idx < 0) {
-    fElements->Add(obj);                  // do not sort this array, must stay this order
-    // ToDo
-    // poznamka, ze tu addelementtag a ne v group
-    // komentare pomazat
-    // Error Warning Info ?!
-    TObjString *idStr = new TObjString(tag); // creating new element tag
-    idStr->SetUniqueID((UInt_t)fElements->GetLast());
-    fGroup->GetElementTags()->Add(idStr); // do not sort this array, must stay this order
-  }
-  else fElements->AddAt(obj, idx);
+  if (idx < 0) idx = fGroup->AddElementTag(tag);
+  fElements->AddAt(obj, idx);
 
-  obj->SetBit(kMustCleanup); // obj destructor will remove the object from fgAllElements
-  TRsnGroup::GetListOfAllElements()->Add(obj);
+  obj->SetBit(kMustCleanup); // recursive remove from fgAllElements
+  fgAllElements->Add(obj);
 
   if (obj->InheritsFrom(TH1::Class())) ((TH1 *)obj)->SetDirectory(0);
 }
@@ -126,9 +137,8 @@ TObject *TRsnFragment::FindElement(const char *tag) const
 //______________________________________________________________________________
 const char *TRsnFragment::FindTag(const TObject *obj) const
 {
-  if (!obj) return ""; // must be, otherwise return tag of first empty slot
+  if (!obj) return ""; // must be, otherwise return tag of the first empty slot of fElements
   if (!fGroup || !fElements) return "";
-
   Int_t idx = fElements->IndexOf(obj);
   if (idx < 0) return "";
   return fGroup->FindElementTag(idx);

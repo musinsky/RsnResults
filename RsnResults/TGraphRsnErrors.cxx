@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-08-12
+// Date:    2013-11-06
 
 #include <TPad.h>
 #include <TMarker.h>
@@ -62,7 +62,7 @@ TGraphRsnErrors::~TGraphRsnErrors()
 //______________________________________________________________________________
 char *TGraphRsnErrors::GetObjectInfo(Int_t px, Int_t py) const
 {
-  if (!gPad) return (char*)"";
+  if (!gPad) return (char *)"";
 
   static char info[64];
   Float_t x = gPad->PadtoX(gPad->AbsPixeltoX(px));
@@ -156,7 +156,7 @@ void TGraphRsnErrors::FlashPoint(Bool_t flash, Option_t *option)
     if (!fFlashMarker) {
       fFlashMarker = new TMarker(fX[fFlashPoint], fY[fFlashPoint], GetMarkerStyle());
       fFlashMarker->SetBit(kCannotPick);
-      //      fFlashMarker->Draw(); // don't need to add to gPad primitives
+      // fFlashMarker->Draw(); // don't need to add to gPad primitives
     }
     Flash(option); // flash enabled
   }
