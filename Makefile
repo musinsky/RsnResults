@@ -18,7 +18,7 @@ INCDIR		= include
 OBJDIR		= build
 LIBDIR		= lib
 LIBPREFIX	= lib
-DISTSRCNAME	= RsnResults_$(shell date +%F).source
+DISTSRCNAME	= RsnResults.git$(shell git describe --always).$(shell date +%F).source
 MAKEDEPEND	= rmkdepend
 DEPENDFILE	= $(OBJDIR)/Make-depend
 NODEPEND	= clean distclean distsrc showbuild
@@ -54,7 +54,7 @@ $(OBJDIR)/%.$(ObjSuf) : %.$(SrcSuf)
 $(DICTPREFIX)%.$(SrcSuf) :
 			@echo "Generating dictionary $@ ..."
 			$(checkdir)
-			@rootcint -f $@ -c -I$(INCDIR) $^
+			@$(ROOTCINT) -f $@ -c -I$(INCDIR) $^
 
 $(DICTPREFIX)%.$(ObjSuf) : $(DICTPREFIX)%.$(SrcSuf)
 			$(checkdir)
@@ -105,6 +105,7 @@ showbuild:
 		@echo "LDFLAGS        = $(LDFLAGS)"
 		@echo ""
 		@echo "INCDIR         = $(INCDIR)"
+		@echo "ROOTCINT       = $(ROOTCINT)"
 		@echo "MAKEDEPEND     = $(MAKEDEPEND)"
 		@echo ""
 		@echo "The list of what to be built"
@@ -128,6 +129,6 @@ $(DEPENDFILE):	$(ALLDEPEND)
 		  -- $(CXXFLAGS) -- $^ 2>/dev/null
 		@echo "$@ done"
 
-ifeq (,$(findstring $(MAKECMDGOALS),$(NODEPEND)))
+ifeq ($(findstring $(MAKECMDGOALS),$(NODEPEND)),)
 -include $(DEPENDFILE)
 endif

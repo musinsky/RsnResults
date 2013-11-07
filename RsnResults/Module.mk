@@ -16,8 +16,8 @@ OBJS	= $(patsubst %.$(SrcSuf),$(OBJDIR)/%.$(ObjSuf),$(SRCS))
 MODLIB	= $(LIBDIR)/$(LIBPREFIX)$(MODULE).$(DllSuf)
 
 RSNRESULTS	:= $(OBJS) $(DICT) $(DICTH) $(DICTO)
-ifeq (distclean,$(findstring distclean,$(MAKECMDGOALS)))
-RSNRESULTS	+= $(MODLIB) $(subst $(MODDIR)/,$(INCDIR)/,$(HDRS)) # '/' important
+ifeq ($(MAKECMDGOALS),distclean)
+RSNRESULTS	+= $(MODLIB) $(subst $(MODDIR)/,$(INCDIR)/,$(HDRS))
 endif
 
 # used in the main Makefile
