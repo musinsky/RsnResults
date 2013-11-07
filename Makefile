@@ -21,13 +21,16 @@ LIBPREFIX	= lib
 DISTSRCNAME	= RsnResults_$(shell date +%F).source
 MAKEDEPEND	= rmkdepend
 DEPENDFILE	= $(OBJDIR)/Make-depend
-NODEPEND        = clean distclean distsrc
+NODEPEND	= clean distclean distsrc showbuild
 
 # all
 ALLHDRS		:=
 ALLLIBS		:=
 ALLDIST		:= Makefile
 ALLDEPEND	:=
+
+# only for showbuild
+ALLHDRSINC	= $(subst $(MODDIR)/,$(INCDIR)/,$(ALLHDRS)) # '/' important
 
 # verbatim variables
 define checkdir
@@ -88,6 +91,36 @@ distsrc:
 		@tar --ignore-failed-read -cJvf $(DISTSRCNAME).tar.xz \
 		  $(ALLDIST) *.C README.md;
 		@echo -e "\n$(DISTSRCNAME).tar.xz done\n"
+
+showbuild:
+		@echo "ROOTSYS        = $(ROOTSYS)"
+		@echo "PLATFORM       = $(PLATFORM)"
+		@echo "ARCH           = $(ARCH)"
+		@echo ""
+		@echo "CXX            = $(CXX)"
+		@echo "CXXFLAGS       = $(CXXFLAGS)"
+		@echo ""
+		@echo "LD             = $(LD)"
+		@echo "SOFLAGS        = $(SOFLAGS)"
+		@echo "LDFLAGS        = $(LDFLAGS)"
+		@echo ""
+		@echo "INCDIR         = $(INCDIR)"
+		@echo "MAKEDEPEND     = $(MAKEDEPEND)"
+		@echo ""
+		@echo "The list of what to be built"
+		@echo "============================"
+		@echo "Modules:"
+		@echo " $(word 1,$(MODULES))"
+		@$(foreach mod,$(filter-out $(word 1,$(MODULES)),$(MODULES)), \
+		  echo " $(mod)";)
+		@echo "Libraries:"
+		@echo " $(word 1,$(ALLLIBS))"
+		@$(foreach lib,$(filter-out $(word 1,$(ALLLIBS)),$(ALLLIBS)), \
+		  echo " $(lib)";)
+		@echo "Includes:"
+		@echo " $(word 1,$(ALLHDRSINC))"
+		@$(foreach inc,$(filter-out $(word 1,$(ALLHDRSINC)),$(ALLHDRSINC)), \
+		  echo " $(inc)";)
 
 $(DEPENDFILE):	$(ALLDEPEND)
 		$(emptyfile)
