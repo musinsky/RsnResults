@@ -1,5 +1,5 @@
 // Jan Musinsky, Martin Vala
-// 2013-07-29
+// 2013-11-07
 
 #ifndef __CINT__
 #include <TROOT.h>
@@ -15,7 +15,7 @@ void rootlogon()
   }
 
   gSystem->AddIncludePath("-Iinclude");
-  gSystem->SetBuildDir("tmp", kTRUE);
+  gSystem->SetBuildDir("build", kTRUE);
 
   gSystem->Load("libRIO");
   gSystem->Load("libGpad");

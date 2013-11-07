@@ -1,6 +1,6 @@
 # Top level Makefile for RsnResults
 # Author: Jan Musinsky
-# Date:   2013-08-10
+# Date:   2013-11-07
 
 include $(ROOTSYS)/etc/Makefile.arch
 HdrSuf		= h
@@ -15,12 +15,12 @@ MODMAKEFILE	= Module.mk
 LNKFILE		= LinkDef
 DICTPREFIX	= G__
 INCDIR		= include
-TMPDIR		= tmp
+OBJDIR		= build
 LIBDIR		= lib
 LIBPREFIX	= lib
 DISTSRCNAME	= RsnResults_$(shell date +%F).source
 MAKEDEPEND	= rmkdepend
-DEPENDFILE	= $(TMPDIR)/Make-depend
+DEPENDFILE	= $(OBJDIR)/Make-depend
 NODEPEND        = clean distclean distsrc
 
 # all
@@ -43,7 +43,7 @@ endef
 .SUFFIXES: # delete the default suffixes
 .PRECIOUS: $(INCDIR)/%.$(HdrSuf) # preserve intermediate files
 
-$(TMPDIR)/%.$(ObjSuf) : %.$(SrcSuf)
+$(OBJDIR)/%.$(ObjSuf) : %.$(SrcSuf)
 			$(checkdir)
 			@$(CXX) $(CXXFLAGS) -I$(INCDIR) -c $< -o $@
 			@echo -e "$@ done"
@@ -79,20 +79,20 @@ debug:		all
 
 clean:
 		@rm -fv $(DEPENDFILE) $(DEPENDFILE).bak \
-		  $(TMPDIR)/*.so $(TMPDIR)/*.d # foreign build files
+		  $(OBJDIR)/*.so $(OBJDIR)/*.d # foreign build files
 
 distclean:	clean
 
 distsrc:
 		@rm -f $(DISTSRCNAME).tar.xz;
 		@tar --ignore-failed-read -cJvf $(DISTSRCNAME).tar.xz \
-		  $(ALLDIST) *.C;
+		  $(ALLDIST) *.C README.md;
 		@echo -e "\n$(DISTSRCNAME).tar.xz done\n"
 
 $(DEPENDFILE):	$(ALLDEPEND)
 		$(emptyfile)
 		@$(MAKEDEPEND) -Y -f$@ -p$(dir $@) \
-		-- $(CXXFLAGS) -- $^ 2>/dev/null
+		  -- $(CXXFLAGS) -- $^ 2>/dev/null
 		@echo "$@ done"
 
 ifeq (,$(findstring $(MAKECMDGOALS),$(NODEPEND)))

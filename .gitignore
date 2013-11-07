@@ -1,6 +1,6 @@
+build/
 include/
 lib/
-tmp/
 /.settings
 .cproject
 .project
