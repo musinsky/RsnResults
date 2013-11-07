@@ -29,9 +29,6 @@ ALLLIBS		:=
 ALLDIST		:= Makefile
 ALLDEPEND	:=
 
-# only for showbuild
-ALLHDRSINC	= $(subst $(MODDIR)/,$(INCDIR)/,$(ALLHDRS)) # '/' important
-
 # verbatim variables
 define checkdir
 @if [ ! -d $@ ]; then mkdir -p $(dir $@); fi
@@ -118,10 +115,6 @@ showbuild:
 		@echo " $(word 1,$(ALLLIBS))"
 		@$(foreach lib,$(filter-out $(word 1,$(ALLLIBS)),$(ALLLIBS)), \
 		  echo " $(lib)";)
-		@echo "Includes:"
-		@echo " $(word 1,$(ALLHDRSINC))"
-		@$(foreach inc,$(filter-out $(word 1,$(ALLHDRSINC)),$(ALLHDRSINC)), \
-		  echo " $(inc)";)
 
 $(DEPENDFILE):	$(ALLDEPEND)
 		$(emptyfile)

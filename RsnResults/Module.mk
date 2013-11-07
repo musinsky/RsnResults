@@ -17,7 +17,7 @@ MODLIB	= $(LIBDIR)/$(LIBPREFIX)$(MODULE).$(DllSuf)
 
 RSNRESULTS	:= $(OBJS) $(DICT) $(DICTH) $(DICTO)
 ifeq ($(MAKECMDGOALS),distclean)
-RSNRESULTS	+= $(MODLIB) $(subst $(MODDIR)/,$(INCDIR)/,$(HDRS))
+RSNRESULTS	+= $(MODLIB) $(subst $(MODDIR)/,$(INCDIR)/,$(HDRS)) # '/' important
 endif
 
 # used in the main Makefile
