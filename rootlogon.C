@@ -1,5 +1,5 @@
 // Jan Musinsky, Martin Vala
-// 2013-11-07
+// 2013-11-14
 
 #ifndef __CINT__
 #include <TROOT.h>
@@ -20,6 +20,7 @@ void rootlogon()
   gSystem->Load("libRIO");
   gSystem->Load("libGpad");
   gSystem->Load("lib/libRsnResults.so");
+  gSystem->Load("lib/libRsnUtils.so");
 
   gStyle->SetHistLineColor(kBlack);
   gStyle->SetGridColor(kGray);

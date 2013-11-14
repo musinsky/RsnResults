@@ -1,6 +1,6 @@
 # Top level Makefile for RsnResults
 # Author: Jan Musinsky
-# Date:   2013-11-07
+# Date:   2013-11-14
 
 include $(ROOTSYS)/etc/Makefile.arch
 HdrSuf		= h
@@ -9,7 +9,7 @@ ifeq ($(MAKECMDGOALS),debug)
 CXXFLAGS	+= -DDEBUG
 endif
 
-MODULES		= RsnResults
+MODULES		= RsnResults RsnUtils
 
 MODMAKEFILE	= Module.mk
 LNKFILE		= LinkDef
