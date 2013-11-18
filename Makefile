@@ -1,6 +1,6 @@
 # Top level Makefile for RsnResults
 # Author: Jan Musinsky
-# Date:   2013-11-14
+# Date:   2013-11-18
 
 include $(ROOTSYS)/etc/Makefile.arch
 HdrSuf		= h
@@ -18,7 +18,7 @@ INCDIR		= include
 OBJDIR		= build
 LIBDIR		= lib
 LIBPREFIX	= lib
-DISTSRCNAME	= RsnResults.git$(shell git describe --always).$(shell date +%F).source
+DISTSRCNAME	= RsnResults.$(shell date +%F).git$(shell git describe --always).source
 MAKEDEPEND	= rmkdepend
 DEPENDFILE	= $(OBJDIR)/Make-depend
 NODEPEND	= clean distclean distsrc showbuild
