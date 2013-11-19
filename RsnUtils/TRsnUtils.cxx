@@ -50,6 +50,43 @@ TArrayI TRsnUtils::RangeFragments(const TH1 *h, Double_t range, Double_t min, Do
   return array;
 }
 //______________________________________________________________________________
+void TRsnUtils::RangeFragmentsAdd(const TH1 *h, TArrayI &array, Double_t range, Double_t max)
+{
+  if (!h) return;
+  TAxis *axis = h->GetXaxis();
+
+  Int_t size = array.GetSize()/2;
+  Double_t min = (size) ? axis->GetBinUpEdge(array[2*size-1]) : axis->GetXmin();
+  if (min >= max) {
+    Warning("TRsnUtils::RangeFragmentsAdd", "max %f must be greater than %f", max, min);
+    return;
+  }
+
+  TArrayI arrayAdd = TRsnUtils::RangeFragments(h, range, min, max, kFALSE);
+  Int_t sizeAdd = arrayAdd.GetSize()/2;
+  if (!sizeAdd) {
+    Warning("TRsnUtils::RangeFragmentsAdd", "no added fragment");
+    return;
+  }
+  if (size && ((arrayAdd[0] - array[2*size-1]) != 1)) {
+    Warning("TRsnUtils::RangeFragmentsAdd", "discontiguous fragment");
+    return;
+  }
+
+  TArrayI arrayMerge(size*2 + sizeAdd*2);
+  Int_t sizeMerge = arrayMerge.GetSize()/2;
+  for (Int_t i = 0; i < size; i++) {
+    arrayMerge[i]           = array[i];
+    arrayMerge[sizeMerge+i] = array[size+i];
+  }
+  for (Int_t i = 0; i < sizeAdd; i++) {
+    arrayMerge[size+i]           = arrayAdd[i];
+    arrayMerge[sizeMerge+size+i] = arrayAdd[sizeAdd+i];
+  }
+
+  array = arrayMerge;
+}
+//______________________________________________________________________________
 void TRsnUtils::RangeFragmentsPrint(const TH1 *h, const TArrayI array)
 {
   if (!h) return;
@@ -69,4 +106,3 @@ void TRsnUtils::RangeFragmentsPrint(const TH1 *h, const TArrayI array)
            last-first, low, up, (low+up)/2.0, up-low);
   }
 }
-//______________________________________________________________________________

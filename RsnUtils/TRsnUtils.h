@@ -16,6 +16,7 @@ namespace TRsnUtils {
 
   TArrayI        RangeFragments(const TH1 *h, Double_t range, Double_t min = 0., Double_t max = 0.,
                                 Bool_t round = kFALSE);
+  void           RangeFragmentsAdd(const TH1 *h, TArrayI &array, Double_t range, Double_t max);
   void           RangeFragmentsPrint(const TH1 *h, const TArrayI array);
 }
 
