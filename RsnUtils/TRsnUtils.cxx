@@ -25,7 +25,7 @@ TArrayI TRsnUtils::RangeFragments(const TH1 *h, Double_t range, Double_t min, Do
   Int_t last[axis->GetNbins()];
   Int_t count = 0;
 
-  if (range < 0) { // special case
+  if ((range < 0) || (range > (axis->GetXmax()-axis->GetXmin()))) { // special case
     if (bmin > bmax) return 0;
     first[0] = bmin; last[0] = bmax; count = 1;
     bmin = bmax + 1; // skipping loop bellow
