@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-11-19
+// Date:    2013-11-20
 
 #include <TH1.h>
 
@@ -24,16 +24,23 @@ TArrayI TRsnUtils::RangeFragments(const TH1 *h, Double_t range, Double_t min, Do
   Int_t first[axis->GetNbins()];
   Int_t last[axis->GetNbins()];
   Int_t count = 0;
+
+  if (range < 0) { // special case
+    if (bmin > bmax) return 0;
+    first[0] = bmin; last[0] = bmax; count = 1;
+    bmin = bmax + 1; // skipping loop bellow
+  }
+
   for (Int_t ib = bmin; ib <= bmax; ib++) {
     Double_t width = axis->GetBinWidth(ib);
     Int_t nwidth = ib;
-    while ((width < range) && !AreEqual(width, range)) // don't compare directly
+    while ((width < range) && !TRsnUtils::AreEqual(width, range)) // don't compare directly
       width += axis->GetBinWidth(++nwidth);
 
     if (round) // rounding range
       if ((width-range) > (axis->GetBinWidth(nwidth)/2.0)) nwidth -= 1;
     nwidth -= ib;
-    if (nwidth < 0) nwidth = 0; // special case
+    if (nwidth < 0) nwidth = 0; // minimum possible range (to same bin)
 
     if ((ib+nwidth) > bmax) break;
     first[count] = ib;
@@ -83,7 +90,6 @@ void TRsnUtils::RangeFragmentsAdd(const TH1 *h, TArrayI &array, Double_t range, 
     arrayMerge[size+i]           = arrayAdd[i];
     arrayMerge[sizeMerge+size+i] = arrayAdd[sizeAdd+i];
   }
-
   array = arrayMerge;
 }
 //______________________________________________________________________________
@@ -97,12 +103,12 @@ void TRsnUtils::RangeFragmentsPrint(const TH1 *h, const TArrayI array)
   Double_t low, up;
   for (Int_t i = 0; i < size; i++) {
     first = array[i];
-    if (i > 0 && ((first-last) != 1))
+    if (i && ((first-last) != 1))
       Error("TRsnUtils::RangeFragmentsPrint", "array must be contiguous");
     last  = array[size+i];
     low   = axis->GetBinLowEdge(first);
     up    = axis->GetBinUpEdge(last);
-    Printf("([%03d] = %03d, [%03d] = %03d)  %d  (%f, %f) %f   \t %.4f", i, first, size+i, last,
+    Printf("([%03d] = %03d, [%03d] = %03d)  %d \t (%f, %f) %f  \t %.4f", i, first, size+i, last,
            last-first, low, up, (low+up)/2.0, up-low);
   }
 }
