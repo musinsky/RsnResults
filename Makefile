@@ -1,10 +1,10 @@
 # Top level Makefile for RsnResults
 # Author: Jan Musinsky
-# Date:   2013-11-18
+# Date:   2013-11-29
 
 include $(ROOTSYS)/etc/Makefile.arch
 HdrSuf		= h
-CXXFLAGS	+= -Wextra
+CXXFLAGS	+= -Wextra -Wformat-security
 ifeq ($(MAKECMDGOALS),debug)
 CXXFLAGS	+= -DDEBUG
 endif
