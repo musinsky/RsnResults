@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-11-06
+// Date:    2014-04-20
 
 #include <TObjArray.h>
 #include <TROOT.h>
@@ -63,7 +63,7 @@ void TRsnFragment::Print(Option_t * /*option*/) const
   for (Int_t i = 0; i < fElements->GetEntriesFast(); i++) {
     obj = fElements->At(i);
     if (obj) Printf("%02d  %s \t %s \t %s \t %s at: %p", i, fGroup->FindElementTag(i),
-                    obj->IsA()->GetName(), obj->GetName(), obj->GetTitle(), obj);
+                    obj->IsA()->GetName(), obj->GetName(), obj->GetTitle(), (void *)obj);
     else     Printf("%02d  %s \t %s", i, fGroup->FindElementTag(i), "empty slot");
   }
 }
