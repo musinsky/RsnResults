@@ -1,10 +1,11 @@
 # Top level Makefile for RsnResults
 # Author: Jan Musinsky
-# Date:   2013-11-29
+# Date:   2014-04-20
 
 include $(ROOTSYS)/etc/Makefile.arch
 HdrSuf		= h
-CXXFLAGS	+= -Wextra -Wformat-security
+CXXFLAGS	+= -Wextra -Wformat=2 -Wshadow
+CXXFLAGS	+= -std=c++11 -Wpedantic -Wno-vla
 ifeq ($(MAKECMDGOALS),debug)
 CXXFLAGS	+= -DDEBUG
 endif
@@ -18,7 +19,7 @@ INCDIR		= include
 OBJDIR		= build
 LIBDIR		= lib
 LIBPREFIX	= lib
-DISTSRCNAME	= RsnResults.$(shell date +%F).git$(shell git describe --always).source
+DISTSRCNAME	= RsnResults.$(shell date +%F).git$(shell git describe --always)
 MAKEDEPEND	= rmkdepend
 DEPENDFILE	= $(OBJDIR)/Make-depend
 NODEPEND	= clean distclean distsrc showbuild
