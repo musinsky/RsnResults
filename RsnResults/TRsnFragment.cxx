@@ -1,11 +1,11 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-04-20
+// Date:    2014-10-10
 
 #include <TObjArray.h>
 #include <TROOT.h>
+
 #include <TClass.h>
-#include <TH1.h>
 
 #include "TRsnFragment.h"
 #include "TRsnGroup.h"
@@ -41,6 +41,12 @@ TRsnFragment::~TRsnFragment()
   SafeDelete(fElements); // objects are deleted also
 }
 //______________________________________________________________________________
+const char *TRsnFragment::GetName() const
+{
+  // ToDo
+  return TObject::GetName();
+}
+//______________________________________________________________________________
 Int_t TRsnFragment::Compare(const TObject *obj) const
 {
   const TRsnFragment *other = dynamic_cast<const TRsnFragment *>(obj);
@@ -56,7 +62,7 @@ Int_t TRsnFragment::Compare(const TObject *obj) const
 //______________________________________________________________________________
 void TRsnFragment::Print(Option_t * /*option*/) const
 {
-  // ToDo: improve
+  // ToDo
   if (!fGroup || !fElements) return;
 
   TObject *obj;
@@ -74,60 +80,63 @@ TList *TRsnFragment::GetListOfAllElements()
   return fgAllElements;
 }
 //______________________________________________________________________________
-void TRsnFragment::AddElement(TObject *obj, const char *tag)
+Int_t TRsnFragment::AddElement(TObject *obj, const char *tag)
 {
   if (!obj) {
-    Error("AddElement", "object is null");
-    return;
+    Warning("AddElement", "no object");
+    return -1;
   }
-  if (!obj->IsOnHeap()) {
-    SysError("AddElement", "object is not on the heap");
-    return;
+  if (TString(tag).IsWhitespace()) {
+    Warning("AddElement", "no whitespace tag");
+    return -1;
   }
   if (!fGroup) {
-    Error("AddElement", "fragment without a parent group");
-    return;
+    Warning("AddElement", "fragment without a parent group");
+    return -1;
   }
-
   if (FindElement(tag)) {
-    Warning("AddElement", "already exist element with tag: %s in fragment", tag);
-    return;
+    Warning("AddElement", "duplicate tag '%s' with element '%s' in fragment '%s'",
+            tag, FindElement(tag)->GetName(), GetName());
+    return -1;
   }
-
-  if (!fElements) {
-    fElements = new TObjArray();
-    fElements->SetName("Elements");
-    fElements->SetOwner(kTRUE);
-  }
-  else if (fElements->Contains(obj)) {
-    Warning("AddElement", "already exist element: %s in fragment", obj->GetName());
-    return;
+  if (!TString(FindTag(obj)).IsWhitespace()) {
+    Warning("AddElement", "duplicate element '%s' with tag '%s' in fragment '%s'",
+            obj->GetName(), FindTag(obj), GetName());
+    return -1;
   }
 
   if (!fgAllElements) {
     fgAllElements = new TList();
     fgAllElements->SetName("AllElements");
+    fgAllElements->SetBit(kMustCleanup); // recursive remove from fCleanups
     gROOT->GetListOfCleanups()->Add(fgAllElements);
-  }
-  else if (fgAllElements->Contains(obj)) {
-    Warning("AddElement", "already exist element: %s in another fragment", obj->GetName());
-    return;
+  } else if (fgAllElements->Contains(obj)) {
+    Warning("AddElement", "already exists element '%s' in another fragment", obj->GetName());
+    return -1;
   }
 
+  // tag is always unique
   // ToDo: LockTags, new tag only from group
-  Int_t idx = fGroup->FindElementTag(tag);
-  if (idx < 0) idx = fGroup->AddElementTag(tag);
-  fElements->AddAt(obj, idx);
+  Int_t idx = fGroup->FindElementTag(tag);       // exist
+  if (idx < 0) idx = fGroup->AddElementTag(tag); // new
 
-  obj->SetBit(kMustCleanup); // recursive remove from fgAllElements
+  if (!fElements) {
+    fElements = new TObjArray();
+    fElements->SetName("Elements");
+    fElements->SetOwner(kTRUE);
+    fElements->SetBit(kMustCleanup); // recursive remove from fCleanups
+    gROOT->GetListOfCleanups()->Add(fElements);
+  }
+
+  obj->SetBit(kMustCleanup); // recursive remove from fElements and fgAllElements
+  fElements->AddAtAndExpand(obj, idx);
   fgAllElements->Add(obj);
-
-  if (obj->InheritsFrom(TH1::Class())) ((TH1 *)obj)->SetDirectory(0);
+  return idx;
 }
 //______________________________________________________________________________
 TObject *TRsnFragment::FindElement(const char *tag) const
 {
-  // fast find an object using its tag
+  // fast find a unique element using its unique tag
 
   if (!fGroup || !fElements) return 0;
   Int_t idx = fGroup->FindElementTag(tag);
@@ -137,6 +146,7 @@ TObject *TRsnFragment::FindElement(const char *tag) const
 //______________________________________________________________________________
 const char *TRsnFragment::FindTag(const TObject *obj) const
 {
+  // rename to FindElement
   if (!obj) return ""; // must be, otherwise return tag of the first empty slot of fElements
   if (!fGroup || !fElements) return "";
   Int_t idx = fElements->IndexOf(obj);

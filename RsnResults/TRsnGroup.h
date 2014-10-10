@@ -1,33 +1,30 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-11-06
+// Date:    2014-10-10
 
 #ifndef RSNGROUP_H
 #define RSNGROUP_H
 
-#include "TGraphRsnErrors.h"
+#include <TNamed.h>
 
 class THashList;
-
 class TRsnFragment;
 
-class TRsnGroup : public TGraphRsnErrors {
+class TRsnGroup : public TNamed {
 
 public:
   TRsnGroup();
-  TRsnGroup(Int_t n);
-  TRsnGroup(Int_t n, const Float_t *x, const Float_t *y, const Float_t *ex = 0, const Float_t *ey = 0);
-  TRsnGroup(Int_t n, const Double_t *x, const Double_t *y, const Double_t *ex = 0, const Double_t *ey = 0);
-  TRsnGroup(const char *filename, const char *format = "%lg %lg %lg %lg", Option_t *option = "");
+  TRsnGroup(const char *name, const char *title = "");
   virtual ~TRsnGroup();
 
   TObjArray     *GetListOfFragments() const { return fFragments; }
-  const THashList *GetListOfElementTags() const { return fElementTags; }
+  //  Int_t          GetNFragments() const {
+  //    return (fFragments) ? fFragments->GetEntriesFast() : 0; }
+  THashList     *GetListOfElementTags() const { return fElementTags; } // GetElementTags
+  //  Int_t          GetNElementTags() const {
+  //    return (fElementTags) ? fElementTags->GetSize() : 0; }
 
-  virtual void   Flash(Option_t *option = "");
   virtual void   Print(Option_t *option = "") const;
-
-  void           AddAtFragmentBla(TObject *obj, Int_t idx);
 
   TRsnFragment  *MakeFragment(Double_t min, Double_t max);
   Int_t          AddElementTag(const char *tag);
@@ -35,8 +32,8 @@ public:
   const char    *FindElementTag(Int_t idx) const;
 
 private:
-  TObjArray     *fFragments;    // !
-  THashList     *fElementTags;  // !
+  TObjArray     *fFragments;    //! list of fragments
+  THashList     *fElementTags;  //! list of unique element tags
 
   ClassDef(TRsnGroup, 1) // RsnGroup class
 };
