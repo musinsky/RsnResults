@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-10
+// Date:    2014-10-12
 
 #ifndef RSNGROUP_H
 #define RSNGROUP_H

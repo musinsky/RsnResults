@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-10
+// Date:    2014-10-12
 
 #ifndef RSNFRAGMENT_H
 #define RSNFRAGMENT_H
@@ -24,7 +24,6 @@ public:
   TObjArray     *GetListOfElements() const { return fElements; }
   static TList  *GetListOfAllElements(); //GetAllElements()
 
-  virtual const char *GetName() const;
   virtual Int_t  Compare(const TObject *obj) const;
   virtual Bool_t IsSortable() const { return kTRUE; }
   virtual void   Print(Option_t *option = "") const;

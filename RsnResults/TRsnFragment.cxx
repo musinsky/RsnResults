@@ -1,8 +1,8 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-10
+// Date:    2014-10-12
 
-#include <TObjArray.h>
+//#include <TObjArray.h>
 #include <TROOT.h>
 
 #include <TClass.h>
@@ -41,12 +41,6 @@ TRsnFragment::~TRsnFragment()
   SafeDelete(fElements); // objects are deleted also
 }
 //______________________________________________________________________________
-const char *TRsnFragment::GetName() const
-{
-  // ToDo
-  return TObject::GetName();
-}
-//______________________________________________________________________________
 Int_t TRsnFragment::Compare(const TObject *obj) const
 {
   const TRsnFragment *other = dynamic_cast<const TRsnFragment *>(obj);
@@ -62,6 +56,13 @@ Int_t TRsnFragment::Compare(const TObject *obj) const
 //______________________________________________________________________________
 void TRsnFragment::Print(Option_t * /*option*/) const
 {
+  if (!fGroup || !fElements) return;
+  //printf("%s", f->FindElement(e->GetName())->GetName());
+  //TIter nextTag(fElementTags);
+
+  return;
+  Printf("%s", GetName());
+
   // ToDo
   if (!fGroup || !fElements) return;
 
@@ -95,13 +96,13 @@ Int_t TRsnFragment::AddElement(TObject *obj, const char *tag)
     return -1;
   }
   if (FindElement(tag)) {
-    Warning("AddElement", "duplicate tag '%s' with element '%s' in fragment '%s'",
-            tag, FindElement(tag)->GetName(), GetName());
+    Warning("AddElement", "duplicate tag '%s' with other element '%s' in this fragment",
+            tag, FindElement(tag)->GetName());
     return -1;
   }
   if (!TString(FindTag(obj)).IsWhitespace()) {
-    Warning("AddElement", "duplicate element '%s' with tag '%s' in fragment '%s'",
-            obj->GetName(), FindTag(obj), GetName());
+    Warning("AddElement", "duplicate element '%s' with other tag '%s' in this fragment",
+            obj->GetName(), FindTag(obj));
     return -1;
   }
 

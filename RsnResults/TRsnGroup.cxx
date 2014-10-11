@@ -1,11 +1,10 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-10
+// Date:    2014-10-12
 
 #include <TROOT.h>
-#include <TObjArray.h>
+#include <TClass.h>
 #include <THashList.h>
-#include <TObjString.h>
 
 #include "TRsnGroup.h"
 #include "TRsnFragment.h"
@@ -38,15 +37,34 @@ TRsnGroup::~TRsnGroup()
 //______________________________________________________________________________
 void TRsnGroup::Print(Option_t * /*option*/) const
 {
-  // ToDo
-  if (!fElementTags) return;
+  if (!fFragments) return;
 
-  TObjString *obj;
-  for (Int_t i = 0; i < fElementTags->GetSize(); i++) {
-    obj = (TObjString *)fElementTags->At(i);
-    if (obj) Printf("%02d  %02d  %s \t %02d  %s", i, (Int_t)obj->GetUniqueID(), obj->GetName(),
-                    FindElementTag(FindElementTag(i)), FindElementTag(i));
-    else     Printf("%02d  %s \t %s", i, FindElementTag(i), "empty slot (impossible)");
+  TIter nextTag(fElementTags);
+  TObject *tag;
+  Int_t cw = 8; // cell width
+
+  // header of table
+  printf("%*s", 3*cw-4, ""); // 4 characters for [%02d]
+  while ((tag = nextTag()))
+    printf("[%02d]%-*.*s", (Int_t)tag->GetUniqueID(), 2*cw-4, 2*cw-5, tag->GetName());
+  printf("\n\n");
+
+  // rows of table
+  for (Int_t i = 0; i < fFragments->GetEntriesFast(); i++) {
+    TRsnFragment *frag = (TRsnFragment *)fFragments->At(i);
+    if (frag)
+      printf("[%02d]%-*.*s", i, 2*cw-4, 2*cw-5, frag->GetName());
+    else {
+      printf("[%02d]none\n", i);
+      continue;
+    }
+    nextTag.Reset();
+    while ((tag = nextTag())) {
+      TObject *elem = frag->FindElement(tag->GetName());
+      if (elem) printf("%*.*s/%-*.*s", cw, cw-1, elem->GetName(), cw-1, cw-1, elem->IsA()->GetName());
+      else      printf("%*.*s/%-*.*s", cw, cw-1, "none", cw-1, cw-1, "none");
+    }
+    printf("\n");
   }
 }
 //______________________________________________________________________________
@@ -111,13 +129,12 @@ Int_t TRsnGroup::FindElementTag(const char *tag) const
 const char *TRsnGroup::FindElementTag(Int_t idx) const
 {
   if (!fElementTags) return "";
-  if ((idx < 0) || (idx > fElementTags->GetLast())) return "";
+  TIter next(fElementTags);
+  TObjString *obj;
+  while ((obj = (TObjString *)next()))
+    if (((Int_t)obj->GetUniqueID()) == idx) return obj->GetName();
+  return "";
 
-  return fElementTags->At(idx)->GetName();
-
-  //  TIter next(fElementTags);
-  //  TObjString *obj;
-  //  while ((obj = (TObjString *)next()))
-  //    if (((Int_t)obj->GetUniqueID()) == idx) return obj->GetName();
-  //  return "";
+  //  if ((idx < 0) || (idx > fElementTags->GetLast())) return "";
+  //  return fElementTags->At(idx)->GetName();
 }
