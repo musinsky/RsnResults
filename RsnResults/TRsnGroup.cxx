@@ -15,6 +15,8 @@ ClassImp(TRsnGroup)
 TRsnGroup::TRsnGroup()
 : TNamed(),
   fFragments(0),
+  fIter(0),
+  fCurrent(0),
   fElementTags(0)
 {
   // Default constructor
@@ -23,6 +25,8 @@ TRsnGroup::TRsnGroup()
 TRsnGroup::TRsnGroup(const char *name, const char *title)
 : TNamed(name, title),
   fFragments(0),
+  fIter(0),
+  fCurrent(0),
   fElementTags(0)
 {
   // Normal constructor
@@ -32,6 +36,7 @@ TRsnGroup::~TRsnGroup()
 {
   // Destructor
   SafeDelete(fFragments);   // objects are deleted also
+  SafeDelete(fIter);
   SafeDelete(fElementTags); // objects are deleted also
 }
 //______________________________________________________________________________
@@ -39,6 +44,7 @@ void TRsnGroup::Print(Option_t * /*option*/) const
 {
   if (!fFragments) return;
 
+  // print as table
   TIter nextTag(fElementTags);
   TObject *tag;
   Int_t cw = 8; // cell width
@@ -71,7 +77,7 @@ void TRsnGroup::Print(Option_t * /*option*/) const
 TRsnFragment *TRsnGroup::MakeFragment(Double_t min, Double_t max)
 {
   if (min > max) {
-    Warning("MakeFragment", "max=%f must be greater or equal than min=%f", max, min);
+    Warning("MakeFragment", "max=%g must be greater or equal than min=%g", max, min);
     return 0;
   }
 
@@ -87,6 +93,32 @@ TRsnFragment *TRsnGroup::MakeFragment(Double_t min, Double_t max)
   fragment->SetBit(kMustCleanup); // recursive remove from fFragments
   fFragments->Add(fragment);
   return fragment;
+}
+//______________________________________________________________________________
+TRsnFragment *TRsnGroup::GetFragment(Double_t inside) const
+{
+  TIter next(fFragments);
+  TRsnFragment *frag;
+  while ((frag = (TRsnFragment *)next())) {
+    // exclude min, max
+    if (inside < frag->GetMax() && !(inside <= frag->GetMin())) return frag;
+    //    // include min, max
+    //    if (inside <= frag->GetMax() && !(inside < frag->GetMin())) return frag;
+  }
+  return 0;
+}
+//______________________________________________________________________________
+void TRsnGroup::Reset()
+{
+  if (!fIter) fIter = new TIter(fFragments);
+  else        fIter->Reset();
+}
+//______________________________________________________________________________
+TRsnFragment *TRsnGroup::Next()
+{
+  if (!fIter) Reset();
+  fCurrent = (TRsnFragment *)fIter->Next();
+  return fCurrent;
 }
 //______________________________________________________________________________
 Int_t TRsnGroup::AddElementTag(const char *tag)
@@ -110,7 +142,7 @@ Int_t TRsnGroup::AddElementTag(const char *tag)
   }
 
   fElementTags->Add(obj);
-  Int_t idx = fElementTags->GetLast();
+  Int_t idx = fElementTags->GetLast(); // all element tags consecutively
   obj->SetUniqueID((UInt_t)idx);
   return idx;
 }

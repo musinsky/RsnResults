@@ -2,10 +2,8 @@
 //          Martin Vala  (martin.vala@cern.ch)
 // Date:    2014-10-12
 
-//#include <TObjArray.h>
 #include <TROOT.h>
-
-#include <TClass.h>
+#include <TObjArray.h>
 
 #include "TRsnFragment.h"
 #include "TRsnGroup.h"
@@ -20,7 +18,9 @@ TRsnFragment::TRsnFragment()
   fMin(0.),
   fMax(0.),
   fGroup(0),
-  fElements(0)
+  fElements(0),
+  fIter(0),
+  fCurrent(0)
 {
   // Default constructor
 }
@@ -30,7 +30,9 @@ TRsnFragment::TRsnFragment(Double_t min, Double_t max, TRsnGroup *group)
   fMin(min),
   fMax(max),
   fGroup(group),
-  fElements(0)
+  fElements(0),
+  fIter(0),
+  fCurrent(0)
 {
   // Normal constructor
 }
@@ -39,6 +41,7 @@ TRsnFragment::~TRsnFragment()
 {
   // Destructor
   SafeDelete(fElements); // objects are deleted also
+  SafeDelete(fIter);
 }
 //______________________________________________________________________________
 Int_t TRsnFragment::Compare(const TObject *obj) const
@@ -54,24 +57,22 @@ Int_t TRsnFragment::Compare(const TObject *obj) const
   else return 0;
 }
 //______________________________________________________________________________
-void TRsnFragment::Print(Option_t * /*option*/) const
+void TRsnFragment::Print(Option_t *option) const
 {
   if (!fGroup || !fElements) return;
-  //printf("%s", f->FindElement(e->GetName())->GetName());
-  //TIter nextTag(fElementTags);
 
-  return;
-  Printf("%s", GetName());
+  Printf("%s\tmin=%f\tmax=%f\tparent group='%s'\tnumber of elements=%d",
+         GetName(), fMin, fMax, fGroup->GetName(), fElements->GetEntries());
 
-  // ToDo
-  if (!fGroup || !fElements) return;
+  TString opt(option);
+  opt.ToLower();
+  if (!opt.Contains("all")) return;
 
-  TObject *obj;
   for (Int_t i = 0; i < fElements->GetEntriesFast(); i++) {
-    obj = fElements->At(i);
-    if (obj) Printf("%02d  %s \t %s \t %s \t %s at: %p", i, fGroup->FindElementTag(i),
-                    obj->IsA()->GetName(), obj->GetName(), obj->GetTitle(), (void *)obj);
-    else     Printf("%02d  %s \t %s", i, fGroup->FindElementTag(i), "empty slot");
+    TObject *obj = fElements->At(i);
+    printf("[%02d]%s\t", i, fGroup->FindElementTag(i));
+    if (obj) obj->ls();
+    else printf("none\n");
   }
 }
 //______________________________________________________________________________
@@ -133,6 +134,19 @@ Int_t TRsnFragment::AddElement(TObject *obj, const char *tag)
   fElements->AddAtAndExpand(obj, idx);
   fgAllElements->Add(obj);
   return idx;
+}
+//______________________________________________________________________________
+void TRsnFragment::Reset()
+{
+  if (!fIter) fIter = new TIter(fElements);
+  else        fIter->Reset();
+}
+//______________________________________________________________________________
+TObject *TRsnFragment::Next()
+{
+  if (!fIter) Reset();
+  fCurrent = fIter->Next();
+  return fCurrent;
 }
 //______________________________________________________________________________
 TObject *TRsnFragment::FindElement(const char *tag) const
