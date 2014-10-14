@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-11-19
+// Date:    2014-10-14
 
 #ifndef RSNUTILS_H
 #define RSNUTILS_H
@@ -12,7 +12,7 @@ class TH1;
 
 namespace TRsnUtils {
 
-  inline Bool_t  AreEqual(Double_t a, Double_t b, Double_t eps = 1.E-8);
+  inline Bool_t  AreEqual(Double_t a, Double_t b, Bool_t isdouble = kFALSE);
 
   TArrayI        RangeFragments(const TH1 *h, Double_t range, Double_t min = 0., Double_t max = 0.,
                                 Bool_t round = kFALSE);
@@ -20,8 +20,13 @@ namespace TRsnUtils {
   void           RangeFragmentsPrint(const TH1 *h, const TArrayI array);
 }
 
-inline Bool_t TRsnUtils::AreEqual(Double_t a, Double_t b, Double_t eps) {
-  return TMath::AreEqualAbs(a, b, eps);
+inline Bool_t TRsnUtils::AreEqual(Double_t a, Double_t b, Bool_t isdouble)
+{
+  Double_t epsilon = TMath::Limits<Float_t>::Epsilon();
+  if (isdouble) epsilon = TMath::Limits<Double_t>::Epsilon();
+  Double_t max = TMath::Max(TMath::Abs(a), TMath::Abs(b));
+  if (max > 1.0) epsilon = epsilon*max;
+  return TMath::AreEqualAbs(a, b, epsilon);
 }
 
 #endif
