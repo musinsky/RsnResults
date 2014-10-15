@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-12
+// Date:    2014-10-15
 
 #include <TROOT.h>
 #include <TObjArray.h>

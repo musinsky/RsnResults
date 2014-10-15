@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-12
+// Date:    2014-10-15
 
 #ifndef RSNGROUP_H
 #define RSNGROUP_H
@@ -22,7 +22,7 @@ public:
   //  Int_t          GetNFragments() const {
   //    return (fFragments) ? fFragments->GetEntriesFast() : 0; }
   // protect fElementTags
-  THashList     *GetListOfElementTags() const { return fElementTags; } // GetElementTags
+  const THashList *GetListOfElementTags() const { return fElementTags; } // GetElementTags
   //  Int_t          GetNElementTags() const {
   //    return (fElementTags) ? fElementTags->GetSize() : 0; }
 

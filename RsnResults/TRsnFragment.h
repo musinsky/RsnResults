@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-12
+// Date:    2014-10-15
 
 #ifndef RSNFRAGMENT_H
 #define RSNFRAGMENT_H
@@ -22,7 +22,7 @@ public:
   Double_t       GetMean() const { return (fMin+fMax)/2.0; }
   Double_t       GetWidth() const { return TMath::Abs(fMax-fMin); }
   TRsnGroup     *GetGroup() const { return fGroup; }
-  TObjArray     *GetListOfElements() const { return fElements; }
+  const TObjArray *GetListOfElements() const { return fElements; }
   static TList  *GetListOfAllElements(); //GetAllElements() (best if outside of this class)
 
   virtual Int_t  Compare(const TObject *obj) const;

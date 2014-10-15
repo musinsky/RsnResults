@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-12
+// Date:    2014-10-15
 
 #include <TROOT.h>
 #include <TClass.h>
@@ -101,9 +101,9 @@ TRsnFragment *TRsnGroup::GetFragment(Double_t inside) const
   TRsnFragment *frag;
   while ((frag = (TRsnFragment *)next())) {
     // exclude min, max
-    if (inside < frag->GetMax() && !(inside <= frag->GetMin())) return frag;
+    if ((inside < frag->GetMax()) && !(inside <= frag->GetMin())) return frag;
     //    // include min, max
-    //    if (inside <= frag->GetMax() && !(inside < frag->GetMin())) return frag;
+    //    if ((inside <= frag->GetMax()) && !(inside < frag->GetMin())) return frag;
   }
   return 0;
 }

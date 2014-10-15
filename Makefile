@@ -1,10 +1,10 @@
 # Top level Makefile for RsnResults
 # Author: Jan Musinsky
-# Date:   2014-04-20
+# Date:   2014-10-15
 
 include $(ROOTSYS)/etc/Makefile.arch
 HdrSuf		= h
-CXXFLAGS	+= -Wextra -Wformat=2 -Wshadow
+CXXFLAGS	+= -Wextra -Wformat=2 -Wshadow -Woverloaded-virtual -fsanitize=undefined -Wreorder
 CXXFLAGS	+= -std=c++11 -Wpedantic -Wno-vla
 ifeq ($(MAKECMDGOALS),debug)
 CXXFLAGS	+= -DDEBUG
@@ -91,7 +91,7 @@ distsrc:
 		@echo -e "\n$(DISTSRCNAME).tar.xz done\n"
 
 showbuild:
-		@echo "ROOTSYS        = $(ROOTSYS)"
+		@echo "ROOTSYS        = $(realpath $(ROOTSYS))"
 		@echo "PLATFORM       = $(PLATFORM)"
 		@echo "ARCH           = $(ARCH)"
 		@echo ""

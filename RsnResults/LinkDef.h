@@ -8,5 +8,6 @@
 #pragma link C++ class TRsnFragment+;
 #pragma link C++ class TRsnGroup+;
 #pragma link C++ class TGraphRsnErrors+;
+#pragma link C++ class TRsnSparseHandler+;
 
 #endif
