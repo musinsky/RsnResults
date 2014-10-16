@@ -1,9 +1,9 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-15
+// Date:    2014-10-16
 
 #include <THnSparse.h>
-#include <TAxis.h>
+#include <TH1.h>
 
 #include "TRsnSparseHandler.h"
 #include "TRsnGroup.h"
@@ -101,4 +101,42 @@ void TRsnSparseHandler::DummyAxes(const THnBase *hb)
     dummy->SetName(axis->GetName());
     fAxes->AddAt(dummy, dim);
   }
+}
+
+
+
+// TODO
+//______________________________________________________________________________
+//void TRsnSparseHandler::AddCutRange(const char *axis, Double_t first, Double_t last)
+//{
+//  if (!fAxes) return;
+//
+//}
+//______________________________________________________________________________
+TRsnGroup *TRsnSparseHandler::MakeGroup(const THnBase *hb)
+{
+  if (!hb) return 0;
+
+  // savedirectory a na konci naspat
+  TH1::AddDirectory(kFALSE);
+
+  // cuts on eta
+  hb->GetAxis(2)->SetRangeUser(-0.5, 0.5);
+
+  TRsnGroup *group = new TRsnGroup("meno", "tituolk");
+  TRsnFragment *fragment;
+
+  TAxis *axis = hb->GetAxis(1);
+  for (Int_t i = 10; i < 20; i++) {
+    // checkovat aby to bolo stale > 0 && <= fNbins (alebo GetLast/First)
+    axis->SetRange(i, i+1);
+    fragment = group->MakeFragment(axis->GetBinLowEdge(axis->GetFirst()),
+                                   axis->GetBinUpEdge(axis->GetLast()));
+    TH1 *histo = hb->Projection(0);
+    fragment->AddElement(histo, "unlike");
+    histo->SetTitle("p_t (min,max)");
+
+  }
+
+  return group;
 }
