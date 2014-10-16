@@ -1,10 +1,14 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-15
+// Date:    2014-10-16
 
 #include <TROOT.h>
 #include <TClass.h>
 #include <THashList.h>
+#include <TGraph.h>
+#include <TAxis.h>
+#include <TExec.h>
+#include <TCanvas.h>
 
 #include "TRsnGroup.h"
 #include "TRsnFragment.h"
@@ -40,14 +44,15 @@ TRsnGroup::~TRsnGroup()
   SafeDelete(fElementTags); // objects are deleted also
 }
 //______________________________________________________________________________
-void TRsnGroup::Print(Option_t * /*option*/) const
+void TRsnGroup::Print(Option_t *option) const
 {
   if (!fFragments) return;
 
   // print as table
   TIter nextTag(fElementTags);
   TObject *tag;
-  Int_t cw = 8; // cell width
+  Int_t cw = TString(option).Atoi(); // cell width
+  if (cw < 6) cw = 8;
 
   // header of table
   printf("%*s", 3*cw-4, ""); // 4 characters for [%02d]
@@ -169,4 +174,59 @@ const char *TRsnGroup::FindElementTag(Int_t idx) const
 
   //  if ((idx < 0) || (idx > fElementTags->GetLast())) return "";
   //  return fElementTags->At(idx)->GetName();
+}
+
+
+
+// TODO testing
+//______________________________________________________________________________
+void TRsnGroup::DrawHighlightFragments() const
+{
+  if (!fFragments) return;
+
+  TGraph *g = new TGraph(fFragments->GetEntriesFast());
+  g->SetMarkerStyle(20);
+  g->SetHighlight(kTRUE);
+  TString cmd = TString::Format("(TGraph *)0x%lx", (ULong_t)g);
+  cmd = TString::Format("((TRsnGroup *)0x%lx)->HighlightFragment(%s)",
+                        (ULong_t)this, cmd.Data());
+  Printf("cmd = %s", cmd.Data());
+  TExec *ex = new TExec("ex", cmd.Data());
+  g->GetListOfFunctions()->Add(ex);
+
+  TRsnFragment *frag;
+  for (Int_t i = 0; i < fFragments->GetEntriesFast(); i++) {
+    frag = (TRsnFragment *)fFragments->At(i);
+    if (frag) g->SetPoint(i, frag->GetMean(), 0.9);
+  }
+
+  g->SetBit(kCanDelete);
+  g->Draw("AP");
+  g->GetXaxis()->SetTitle("bla_bla");
+}
+//______________________________________________________________________________
+void TRsnGroup::HighlightFragment(const TGraph *gr) const
+{
+  // TODO templates: what and how highlighing
+  if (!gPad || !gr) return;
+
+  // not correct
+  TVirtualPad *ph = (TVirtualPad *)gPad->FindObject("ph");
+  if (!ph) {
+    ph = new TPad("ph", "ph", 0.0, 0.2, 1.0, 1.0);
+    ph->SetFillColor(kBlue-10);
+    ph->Draw();
+  }
+
+  Int_t ih = gr->GetHighlightPoint();
+  if (ih == -1) return;
+  TRsnFragment *frag = (TRsnFragment *)fFragments->At(ih);
+  if (!frag) return;
+
+  TVirtualPad *savepad = gPad;
+  ph->cd();
+  TObject *element = frag->GetElement("unlike");
+  if (!element) ph->Clear();
+  else element->Draw();
+  savepad->cd();
 }

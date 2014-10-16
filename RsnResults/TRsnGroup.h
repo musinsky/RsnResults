@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-15
+// Date:    2014-10-16
 
 #ifndef RSNGROUP_H
 #define RSNGROUP_H
@@ -10,6 +10,7 @@
 class TIter;
 class THashList;
 class TRsnFragment;
+class TGraph;
 
 class TRsnGroup : public TNamed {
 
@@ -30,12 +31,16 @@ public:
 
   TRsnFragment  *MakeFragment(Double_t min, Double_t max);
   TRsnFragment  *GetFragment(Double_t inside) const;
+  // ResetFragments(), NextFragment(), CurrentFragment()
   void           Reset();
   TRsnFragment  *Next();
   TRsnFragment  *Current() const { return fCurrent; }
   Int_t          AddElementTag(const char *tag);
   Int_t          FindElementTag(const char *tag) const;
   const char    *FindElementTag(Int_t idx) const;
+
+  void           DrawHighlightFragments() const;
+  void           HighlightFragment(const TGraph *gr) const;
 
 private:
   TObjArray     *fFragments;    //  list of fragments
