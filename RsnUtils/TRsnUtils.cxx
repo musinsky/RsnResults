@@ -1,8 +1,9 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2013-11-20
+// Date:    2014-10-27
 
 #include <TH1.h>
+#include <TSystem.h>
 
 #include "TRsnUtils.h"
 
@@ -111,4 +112,13 @@ void TRsnUtils::RangeFragmentsPrint(const TH1 *h, const TArrayI array)
     Printf("([%03d] = %03d, [%03d] = %03d)  %d \t (%f, %f) %f  \t %.4f", i, first, size+i, last,
            last-first, low, up, (low+up)/2.0, up-low);
   }
+}
+//______________________________________________________________________________
+void TRsnUtils::MemoryInfo()
+{
+  ProcInfo_t info;
+  gSystem->GetProcInfo(&info);
+
+  Printf("virtual = %ld KB (%.1f MiB), resident = %ld KB (%.1f MiB)",
+         info.fMemVirtual, info.fMemVirtual/1024.0, info.fMemResident, info.fMemResident/1024.0);
 }

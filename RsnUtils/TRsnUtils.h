@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-15
+// Date:    2014-10-27
 
 #ifndef RSNUTILS_H
 #define RSNUTILS_H
@@ -19,6 +19,8 @@ namespace TRsnUtils {
                                 Bool_t round = kFALSE);
   void           RangeFragmentsAdd(const TH1 *h, TArrayI &array, Double_t range, Double_t max);
   void           RangeFragmentsPrint(const TH1 *h, const TArrayI array);
+
+  void           MemoryInfo();
 }
 
 inline Bool_t TRsnUtils::AreEqual(Double_t a, Double_t b, Bool_t isdouble)
