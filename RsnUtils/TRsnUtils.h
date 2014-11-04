@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-27
+// Date:    2014-11-04
 
 #ifndef RSNUTILS_H
 #define RSNUTILS_H
@@ -9,6 +9,7 @@
 #include <TArrayI.h>
 
 class TH1;
+class TAxis;
 
 namespace TRsnUtils {
 
@@ -21,6 +22,7 @@ namespace TRsnUtils {
   void           RangeFragmentsPrint(const TH1 *h, const TArrayI array);
 
   void           MemoryInfo();
+  Bool_t         CheckEqualBinAxes(const TAxis *a1, const TAxis *a2);
 }
 
 inline Bool_t TRsnUtils::AreEqual(Double_t a, Double_t b, Bool_t isdouble)

@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-27
+// Date:    2014-11-04
 
 #include <TH1.h>
 #include <TSystem.h>
@@ -121,4 +121,27 @@ void TRsnUtils::MemoryInfo()
 
   Printf("virtual = %ld KB (%.1f MiB), resident = %ld KB (%.1f MiB)",
          info.fMemVirtual, info.fMemVirtual/1024.0, info.fMemResident, info.fMemResident/1024.0);
+}
+//______________________________________________________________________________
+Bool_t TRsnUtils::CheckEqualBinAxes(const TAxis *a1, const TAxis *a2)
+{
+  if (!a1 || !a2) return kFALSE;
+
+  if (a1->GetNbins() != a2->GetNbins()) return kFALSE;
+
+  Bool_t sameFixVar = kTRUE;
+  if (a1->IsVariableBinSize() != a2->IsVariableBinSize()) sameFixVar = kFALSE;
+  // compare axes with fix and variable bin size must be compare with "low precision"
+
+  if (!TRsnUtils::AreEqual(a1->GetXmin(), a2->GetXmin(), sameFixVar)) return kFALSE;
+  if (!TRsnUtils::AreEqual(a1->GetXmax(), a2->GetXmax(), sameFixVar)) return kFALSE;
+  // identical axes with fix bin size
+  if (!a1->IsVariableBinSize() && sameFixVar) return kTRUE;
+
+  for (Int_t ib = 1; ib <= a1->GetNbins(); ib++)
+    if (!TRsnUtils::AreEqual(a1->GetBinLowEdge(ib), a2->GetBinLowEdge(ib), sameFixVar)) return kFALSE;
+
+  if (!sameFixVar) Info("TRsnUtils::CheckEqualBinAxes", "same axes with fix and variable bin size");
+  // else identical axes with variable bin size
+  return kTRUE;
 }
