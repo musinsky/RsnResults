@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-16
+// Date:    2014-11-12
 
 #include <TROOT.h>
 #include <TClass.h>
@@ -48,7 +48,7 @@ void TRsnGroup::Print(Option_t *option) const
 {
   if (!fFragments) return;
 
-  // print as table
+  // print all fragments as table
   TIter nextTag(fElementTags);
   TObject *tag;
   Int_t cw = TString(option).Atoi(); // cell width
@@ -185,21 +185,23 @@ void TRsnGroup::DrawHighlightFragments() const
   if (!fFragments) return;
 
   TGraph *g = new TGraph(fFragments->GetEntriesFast());
-  g->SetMarkerStyle(20);
-  g->SetHighlight(kTRUE);
+  for (Int_t i = 0; i < fFragments->GetEntriesFast(); i++) {
+    TRsnFragment *frag = (TRsnFragment *)fFragments->At(i);
+    if (frag) g->SetPoint(i, frag->GetMean(), 0.91);
+  }
+
   TString cmd = TString::Format("(TGraph *)0x%lx", (ULong_t)g);
+  Printf("cmd = %s", cmd.Data());
   cmd = TString::Format("((TRsnGroup *)0x%lx)->HighlightFragment(%s)",
                         (ULong_t)this, cmd.Data());
   Printf("cmd = %s", cmd.Data());
   TExec *ex = new TExec("ex", cmd.Data());
   g->GetListOfFunctions()->Add(ex);
+  g->SetHighlight(kTRUE);
 
-  TRsnFragment *frag;
-  for (Int_t i = 0; i < fFragments->GetEntriesFast(); i++) {
-    frag = (TRsnFragment *)fFragments->At(i);
-    if (frag) g->SetPoint(i, frag->GetMean(), 0.9);
-  }
-
+  g->SetTitle();
+  g->SetMarkerStyle(20);
+  g->GetYaxis()->SetTickLength(0.0);
   g->SetBit(kCanDelete);
   g->Draw("AP");
   g->GetXaxis()->SetTitle("bla_bla");
@@ -208,6 +210,7 @@ void TRsnGroup::DrawHighlightFragments() const
 void TRsnGroup::HighlightFragment(const TGraph *gr) const
 {
   // TODO templates: what and how highlighing
+  // maybe gr as fHighGraph
   if (!gPad || !gr) return;
 
   // not correct
@@ -223,10 +226,10 @@ void TRsnGroup::HighlightFragment(const TGraph *gr) const
   TRsnFragment *frag = (TRsnFragment *)fFragments->At(ih);
   if (!frag) return;
 
-  TVirtualPad *savepad = gPad;
+  TVirtualPad *save = gPad;
   ph->cd();
   TObject *element = frag->GetElement("unlike");
   if (!element) ph->Clear();
   else element->Draw();
-  savepad->cd();
+  save->cd();
 }

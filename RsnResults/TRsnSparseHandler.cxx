@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-16
+// Date:    2014-11-12
 
 #include <THnSparse.h>
 #include <TH1.h>
@@ -71,9 +71,9 @@ Bool_t TRsnSparseHandler::CheckConsistentFragments(TRsnGroup *group, const TAxis
   // TODO need testing
   if (!group || !axis) return kFALSE;
 
-  group->Reset();
+  TIter next(group->GetListOfFragments());
   TRsnFragment *fragment;
-  while ((fragment = group->Next())) {
+  while ((fragment = (TRsnFragment *)next())) {
     Int_t bin = axis->FindFixBin(fragment->GetMean()); // no attempt to rebin
     if ((bin == 0) || (bin == (axis->GetNbins() + 1))) return kFALSE; // under/over
     if (!TRsnUtils::AreEqual(axis->GetBinLowEdge(bin), fragment->GetMin(), kTRUE)) return kFALSE;
@@ -117,7 +117,7 @@ TRsnGroup *TRsnSparseHandler::MakeGroup(const THnBase *hb)
 {
   if (!hb) return 0;
 
-  // savedirectory a na konci naspat
+  Bool_t save = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
   // cuts on eta
@@ -138,5 +138,6 @@ TRsnGroup *TRsnSparseHandler::MakeGroup(const THnBase *hb)
 
   }
 
+  TH1::AddDirectory(save);
   return group;
 }
