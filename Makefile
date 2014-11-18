@@ -1,11 +1,12 @@
 # Top level Makefile for RsnResults
 # Author: Jan Musinsky
-# Date:   2014-10-15
+# Date:   2014-11-18
 
 include $(ROOTSYS)/etc/Makefile.arch
 HdrSuf		= h
-CXXFLAGS	+= -Wextra -Wformat=2 -Wshadow -Woverloaded-virtual -fsanitize=undefined -Wreorder
-CXXFLAGS	+= -std=c++11 -Wpedantic -Wno-vla
+CXXFLAGS	+= -Wshadow -Woverloaded-virtual
+CXXFLAGS	+= -std=c++11 #-Wno-deprecated-declarations
+CXXFLAGS	+= -Wextra -Wformat=2 -Wreorder -Wpedantic #-Wno-vla -Wno-long-long
 ifeq ($(MAKECMDGOALS),debug)
 CXXFLAGS	+= -DDEBUG
 endif
