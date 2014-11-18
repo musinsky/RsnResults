@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-11-12
+// Date:    2014-11-18
 
 #include <TROOT.h>
 #include <TClass.h>
@@ -19,8 +19,6 @@ ClassImp(TRsnGroup)
 TRsnGroup::TRsnGroup()
 : TNamed(),
   fFragments(0),
-  fIter(0),
-  fCurrent(0),
   fElementTags(0)
 {
   // Default constructor
@@ -29,8 +27,6 @@ TRsnGroup::TRsnGroup()
 TRsnGroup::TRsnGroup(const char *name, const char *title)
 : TNamed(name, title),
   fFragments(0),
-  fIter(0),
-  fCurrent(0),
   fElementTags(0)
 {
   // Normal constructor
@@ -40,7 +36,6 @@ TRsnGroup::~TRsnGroup()
 {
   // Destructor
   SafeDelete(fFragments);   // objects are deleted also
-  SafeDelete(fIter);
   SafeDelete(fElementTags); // objects are deleted also
 }
 //______________________________________________________________________________
@@ -111,19 +106,6 @@ TRsnFragment *TRsnGroup::GetFragment(Double_t inside) const
     //    if ((inside <= frag->GetMax()) && !(inside < frag->GetMin())) return frag;
   }
   return 0;
-}
-//______________________________________________________________________________
-void TRsnGroup::Reset()
-{
-  if (!fIter) fIter = new TIter(fFragments);
-  else        fIter->Reset();
-}
-//______________________________________________________________________________
-TRsnFragment *TRsnGroup::Next()
-{
-  if (!fIter) Reset();
-  fCurrent = (TRsnFragment *)fIter->Next();
-  return fCurrent;
 }
 //______________________________________________________________________________
 Int_t TRsnGroup::AddElementTag(const char *tag)
