@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-11-04
+// Date:    2014-11-18
 
 #include <TH1.h>
 #include <TSystem.h>
@@ -22,12 +22,16 @@ TArrayI TRsnUtils::RangeFragments(const TH1 *h, Double_t range, Double_t min, Do
     bmax = TMath::Min(bmax, axis->FindFixBin(max)); // exclude max
   }
 
-  Int_t first[axis->GetNbins()];
-  Int_t last[axis->GetNbins()];
+  Int_t *first = new Int_t[axis->GetNbins()];
+  Int_t *last  = new Int_t[axis->GetNbins()];
   Int_t count = 0;
 
   if ((range < 0) || (range > (axis->GetXmax()-axis->GetXmin()))) { // special case
-    if (bmin > bmax) return 0;
+    if (bmin > bmax) {
+      delete [] first;
+      delete [] last;
+      return 0;
+    }
     first[0] = bmin; last[0] = bmax; count = 1;
     bmin = bmax + 1; // skipping loop bellow
   }
@@ -35,6 +39,7 @@ TArrayI TRsnUtils::RangeFragments(const TH1 *h, Double_t range, Double_t min, Do
   for (Int_t ib = bmin; ib <= bmax; ib++) {
     Double_t width = axis->GetBinWidth(ib);
     Int_t nwidth = ib;
+    // TODO check !!!
     while ((width < range) && !TRsnUtils::AreEqual(width, range)) // don't compare directly
       width += axis->GetBinWidth(++nwidth);
 
@@ -55,6 +60,8 @@ TArrayI TRsnUtils::RangeFragments(const TH1 *h, Double_t range, Double_t min, Do
     array[i]       = first[i];
     array[count+i] = last[i];
   }
+  delete [] first;
+  delete [] last;
   return array;
 }
 //______________________________________________________________________________
