@@ -1,15 +1,9 @@
 // Jan Musinsky, Martin Vala
-// 2013-11-14
+// 2014-11-18
 
-#ifndef __CINT__
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TStyle.h>
-
-void rootlogon()
-#endif
+//void rootlogon()
 {
-  if (gROOT->GetClass("TRsnResults")) {
+  if (TClass::GetClass("TRsnResults")) {
     Printf("RsnResults libraries was already loaded");
     return;
   }
@@ -17,11 +11,9 @@ void rootlogon()
   gSystem->AddIncludePath("-Iinclude");
   gSystem->SetBuildDir("build", kTRUE);
 
-  gSystem->Load("libRIO");
   gSystem->Load("libGpad");
   gSystem->Load("lib/libRsnResults.so");
   gSystem->Load("lib/libRsnUtils.so");
 
-  gStyle->SetHistLineColor(kBlack);
   gStyle->SetGridColor(kGray);
 }
