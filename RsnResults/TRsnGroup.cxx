@@ -210,7 +210,7 @@ void TRsnGroup::HighlightFragment(const TGraph *gr) const
 
   TVirtualPad *save = gPad;
   ph->cd();
-  TObject *element = frag->GetElement("unlike");
+  TObject *element = frag->GetElement("Unlike");
   if (!element) ph->Clear();
   else element->Draw();
   save->cd();

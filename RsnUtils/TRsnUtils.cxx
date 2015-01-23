@@ -40,7 +40,7 @@ TArrayI TRsnUtils::RangeFragments(const TH1 *h, Double_t range, Double_t min, Do
     Double_t width = axis->GetBinWidth(ib);
     Int_t nwidth = ib;
     // TODO check !!!
-    while ((width < range) && !TRsnUtils::AreEqual(width, range)) // don't compare directly
+    while ((width < range) && !TRsnUtils::AreEqual(width, range, kFALSE)) // don't compare directly
       width += axis->GetBinWidth(++nwidth);
 
     if (round) // rounding range
