@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2015-01-23
+// Date:    2015-01-27
 
 #include <THnSparse.h>
 #include <TH1.h>
@@ -256,6 +256,8 @@ void TRsnSparseHandler::AddFragmentElement(const THnBase *sparse, const char *ta
 
     fragment = (TRsnFragment *)fGroup->GetListOfFragments()->At(i); // TODO implementovat funkciu GetFragmentAt
     TH1 *histo = sparse->Projection(fDimElement, "E");
+
+    Printf("%s, %s", histo->GetName(), sparse->GetName());
     // TODO TryRename histo
     // histo->SetTitle("p_t (min,max)");
     fragment->AddElement(histo, tag ? tag : sparse->GetName());
@@ -268,21 +270,21 @@ void TRsnSparseHandler::AddFragmentElement(const THnBase *sparse, const char *ta
 
 
 //______________________________________________________________________________
-Bool_t TRsnSparseHandler::CheckConsistentFragments(TRsnGroup *group, const TAxis *axis)
+Bool_t TRsnSparseHandler::CheckConsistentFragments(const TRsnGroup *group, const TAxis *axis)
 {
-  // asi len pre pripad ak nebudu identicke (friend) sparse
-  // TODO need testing
+  // check non identical sprase axis
   if (!group || !axis) return kFALSE;
 
   TIter next(group->GetListOfFragments());
   TRsnFragment *fragment;
+  Bool_t precision = !(axis->IsVariableBinSize());
   while ((fragment = (TRsnFragment *)next())) {
-    Int_t bin = axis->FindFixBin(fragment->GetMean()); // no attempt to rebin
-    if ((bin == 0) || (bin == (axis->GetNbins() + 1))) return kFALSE; // under/over
-
-    // pozor, ak bude fix a variable tak nizsiu preciznost porovnavania
-    if (!TRsnUtils::AreEqual(axis->GetBinLowEdge(bin), fragment->GetMin(), kTRUE)) return kFALSE;
-    if (!TRsnUtils::AreEqual(axis->GetBinUpEdge(bin), fragment->GetMax(), kTRUE)) return kFALSE;
+    Int_t binMin = axis->FindFixBin(fragment->GetMean() - 0.49*fragment->GetWidth());
+    Int_t binMax = axis->FindFixBin(fragment->GetMean() + 0.49*fragment->GetWidth());
+    if ((binMin == 0) || (binMin == (axis->GetNbins() + 1))) return kFALSE; // under/over
+    if ((binMax == 0) || (binMax == (axis->GetNbins() + 1))) return kFALSE;
+    if (!TRsnUtils::AreEqual(axis->GetBinLowEdge(binMin), fragment->GetMin(), precision)) return kFALSE;
+    if (!TRsnUtils::AreEqual(axis->GetBinUpEdge(binMax), fragment->GetMax(), precision)) return kFALSE;
   }
 
   return kTRUE;

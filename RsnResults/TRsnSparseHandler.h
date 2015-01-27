@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2015-01-23
+// Date:    2015-01-27
 
 #ifndef RSNSPARSEHANDLER_H
 #define RSNSPARSEHANDLER_H
@@ -37,13 +37,10 @@ public:
   void          SetAxisRangeUser(const char *aname, Double_t ufirst, Double_t ulast) { SetAxisRangeUser(GetAxisDim(aname), ufirst, ulast); }
 
 
+
   TRsnGroup    *MakeGroupFragments(const char *gname, const char *gtitle = "");
   void          AddFragmentElement(const THnBase *sparse, const char *tag = 0) const;
-
-
-  // private ?!
-  static Bool_t CheckConsistentFragments(TRsnGroup *group, const TAxis *axis);
-
+  static Bool_t CheckConsistentFragments(const TRsnGroup *group, const TAxis *axis);
 
 private:
   TRsnGroup    *fGroup;        //  current group
