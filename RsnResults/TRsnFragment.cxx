@@ -1,9 +1,8 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2014-10-15
+// Date:    2015-04-17
 
 #include <TROOT.h>
-#include <TObjArray.h>
 
 #include "TRsnFragment.h"
 #include "TRsnGroup.h"
@@ -18,9 +17,7 @@ TRsnFragment::TRsnFragment()
   fMin(0.),
   fMax(0.),
   fGroup(0),
-  fElements(0),
-  fIter(0),
-  fCurrent(0)
+  fElements(0)
 {
   // Default constructor
 }
@@ -30,9 +27,7 @@ TRsnFragment::TRsnFragment(Double_t min, Double_t max, TRsnGroup *group)
   fMin(min),
   fMax(max),
   fGroup(group),
-  fElements(0),
-  fIter(0),
-  fCurrent(0)
+  fElements(0)
 {
   // Normal constructor
 }
@@ -41,7 +36,6 @@ TRsnFragment::~TRsnFragment()
 {
   // Destructor
   SafeDelete(fElements); // objects are deleted also
-  SafeDelete(fIter);
 }
 //______________________________________________________________________________
 Int_t TRsnFragment::Compare(const TObject *obj) const
@@ -101,9 +95,9 @@ Int_t TRsnFragment::AddElement(TObject *obj, const char *tag)
             tag, FindElement(tag)->GetName());
     return -1;
   }
-  if (!TString(FindTag(obj)).IsWhitespace()) {
+  if (!TString(FindElement(obj)).IsWhitespace()) {
     Warning("AddElement", "duplicate element '%s' with other tag '%s' in this fragment",
-            obj->GetName(), FindTag(obj));
+            obj->GetName(), FindElement(obj));
     return -1;
   }
 
@@ -136,19 +130,6 @@ Int_t TRsnFragment::AddElement(TObject *obj, const char *tag)
   return idx;
 }
 //______________________________________________________________________________
-void TRsnFragment::Reset()
-{
-  if (!fIter) fIter = new TIter(fElements);
-  else        fIter->Reset();
-}
-//______________________________________________________________________________
-TObject *TRsnFragment::Next()
-{
-  if (!fIter) Reset();
-  fCurrent = fIter->Next();
-  return fCurrent;
-}
-//______________________________________________________________________________
 TObject *TRsnFragment::FindElement(const char *tag) const
 {
   // fast find a unique element using its unique tag
@@ -159,9 +140,8 @@ TObject *TRsnFragment::FindElement(const char *tag) const
   return fElements->UncheckedAt(idx);
 }
 //______________________________________________________________________________
-const char *TRsnFragment::FindTag(const TObject *obj) const
+const char *TRsnFragment::FindElement(const TObject *obj) const
 {
-  // rename to FindElement
   if (!obj) return ""; // must be, otherwise return tag of the first empty slot of fElements
   if (!fGroup || !fElements) return "";
   Int_t idx = fElements->IndexOf(obj);

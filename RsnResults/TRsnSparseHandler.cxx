@@ -254,7 +254,8 @@ void TRsnSparseHandler::AddFragmentElement(const THnBase *sparse, const char *ta
     last  = fBinFragments->At(size+i);
     axis->SetRange(first, last); // range for current fragment
 
-    fragment = (TRsnFragment *)fGroup->GetListOfFragments()->At(i); // TODO implementovat funkciu GetFragmentAt
+    fragment = fGroup->FragmentAt(i);
+    if (!fragment) continue;
     TH1 *histo = sparse->Projection(fDimElement, "E");
 
     Printf("%s, %s", histo->GetName(), sparse->GetName());
