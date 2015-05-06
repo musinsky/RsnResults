@@ -1,6 +1,6 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2015-04-17
+// Date:    2015-04-20
 
 #include <TList.h>
 #include <TGraph.h> // patched ROOT with Highlight for TGraph
@@ -13,11 +13,13 @@
 
 const TRsnGroup *group = 0;
 TGraph *gr = 0;
+const char *tagname = "";
 
 //______________________________________________________________________________
-void DrawHighlightFragments(const TRsnGroup *rsng)
+void DrawHighlightFragments(const TRsnGroup *rsng, const char *whichtag = "")
 {
   if (!rsng || !rsng->GetListOfFragments()) return;
+  tagname = whichtag;
 
   group = rsng;
   TObjArray *fragments = group->GetListOfFragments();
@@ -65,7 +67,7 @@ void HighlightFragment()
 
   TVirtualPad *save = gPad;
   ph->cd();
-  TObject *element = frag->FindElement("Unlike");
+  TObject *element = frag->FindElement(tagname);
   if (!element) ph->Clear();
   else element->Draw();
   save->cd();

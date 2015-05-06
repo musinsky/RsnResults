@@ -51,16 +51,12 @@ Int_t TRsnFragment::Compare(const TObject *obj) const
   else return 0;
 }
 //______________________________________________________________________________
-void TRsnFragment::Print(Option_t *option) const
+void TRsnFragment::Print(Option_t * /*option*/) const
 {
   if (!fGroup || !fElements) return;
 
   Printf("%s\tmin=%f\tmax=%f\tparent group='%s'\tnumber of elements=%d",
          GetName(), fMin, fMax, fGroup->GetName(), fElements->GetEntries());
-
-  TString opt(option);
-  opt.ToLower();
-  if (!opt.Contains("all")) return;
 
   for (Int_t i = 0; i < fElements->GetEntriesFast(); i++) {
     TObject *obj = fElements->At(i);

@@ -18,6 +18,7 @@ public:
   virtual ~TRsnGroup();
 
   TObjArray    *GetListOfFragments() const { return fFragments; }
+  Int_t         GetNFragments() const { return fFragments->GetEntriesFast(); }
 
   virtual void  Print(Option_t *option = "") const;
 

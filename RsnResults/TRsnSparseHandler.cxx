@@ -1,8 +1,8 @@
 // Authors: Jan Musinsky (jan.musinsky@cern.ch)
 //          Martin Vala  (martin.vala@cern.ch)
-// Date:    2015-01-27
+// Date:    2015-04-22
 
-#include <THnSparse.h>
+#include <THnBase.h>
 #include <TH1.h>
 
 #include "TRsnSparseHandler.h"
@@ -15,14 +15,13 @@ ClassImp(TRsnSparseHandler)
 //______________________________________________________________________________
 TRsnSparseHandler::TRsnSparseHandler(const THnBase *sparse)
 : TObject(),
-  fGroup(0),
   fAxes(0),
-  fBinFragments(0),
   fDimFragments(-1),
-  fDimElement(-1)
+  fBinFragments(0),
+  fDimElement(-1),
+  fGroup(0)
 {
   // Default constructor
-
   if (!sparse) return;
 
   fAxes = new TObjArray(sparse->GetNdimensions());
@@ -37,7 +36,8 @@ TRsnSparseHandler::TRsnSparseHandler(const THnBase *sparse)
     else                           // fix
       dummy = new TAxis(axis->GetNbins(), axis->GetXmin(), axis->GetXmax());
     dummy->SetName(axis->GetName());
-    fAxes->AddAt(dummy, dim);
+    //    fAxes->AddAt(dummy, dim);
+    fAxes->Add(dummy);
   }
 }
 //______________________________________________________________________________
@@ -66,7 +66,7 @@ void TRsnSparseHandler::Print(Option_t * /*option*/) const
     up  = dummy->GetBinUpEdge(last);
 
     printf("axis[%d]('%s')\t[%03d, %03d]\t(%f, %f)", dim, dummy->GetName(), first, last, low, up);
-    if (dim == fDimFragments) printf("\t<= Fragments");
+    if (dim == fDimFragments) printf("\t<= \033[1mFragments\033[0m");
     if (dim == fDimElement)   printf("\t<= Element");
     if (dummy->TestBit(TAxis::kAxisRange)) {
       first = dummy->GetFirst();
@@ -82,14 +82,37 @@ void TRsnSparseHandler::Print(Option_t * /*option*/) const
   if ((fDimFragments == -1) || !fBinFragments) return;
   dummy = GetAxis(fDimFragments);
   Int_t size = fBinFragments->GetSize()/2;
-  Printf("number of fragments = %d", size);
+  Printf("number of \033[1mFragments\033[0m = %d", size);
   for (Int_t i = 0; i < size; i++) {
     first = fBinFragments->At(i);
     last  = fBinFragments->At(size+i);
     low = dummy->GetBinLowEdge(first);
     up  = dummy->GetBinUpEdge(last);
-    printf("fragment[%03d]\t[%03d, %03d]\t(%f, %f)\n", i, first, last, low, up);
+    printf("%s[%03d]\t[%03d, %03d]\t(%f, %f)\n", fGroup ? fGroup->GetName() : "fragment",
+        i, first, last, low, up);
   }
+}
+//______________________________________________________________________________
+TAxis *TRsnSparseHandler::GetAxis(Int_t dim) const
+{
+  if (!fAxes) return 0;
+  TAxis *axis = (TAxis *)fAxes->At(dim);
+  if (!axis) {
+    Warning("GetAxis", "axis with dimension %d doesn't exist", dim);
+    return 0;
+  }
+  else return axis;
+}
+//______________________________________________________________________________
+Int_t TRsnSparseHandler::GetAxis(const char *name) const
+{
+  if (!fAxes) return -1;
+  TObject *oaxis = fAxes->FindObject(name);
+  if (!oaxis) {
+    Warning("GetAxis", "axis with name '%s' doesn't exist", name);
+    return -1;
+  }
+  else return fAxes->IndexOf(oaxis); // oaxis != 0 (no index of first empty slot)
 }
 //______________________________________________________________________________
 TAxis *TRsnSparseHandler::CheckAxisType(Int_t dim)
@@ -103,15 +126,15 @@ TAxis *TRsnSparseHandler::CheckAxisType(Int_t dim)
   }
 
   if (dummy->TestBit(TAxis::kAxisRange)) {
-    Printf("axis[%d]('%s') change previous type Range", dim, dummy->GetName());
+    Printf("axis[%d]('%s') change from previous type Range", dim, dummy->GetName());
     dummy->SetRange(0, 0);
   }
   if (dim == fDimElement) {
-    Printf("axis[%d]('%s') change previous type Element", dim, dummy->GetName());
+    Printf("axis[%d]('%s') change from previous type Element", dim, dummy->GetName());
     fDimElement = -1;
   }
   if (dim == fDimFragments) {
-    Printf("axis[%d]('%s') change previous type Fragments", dim, dummy->GetName());
+    Printf("axis[%d]('%s') change from previous type Fragments", dim, dummy->GetName());
     fDimFragments = -1;
     SafeDelete(fBinFragments);
   }
@@ -121,11 +144,15 @@ TAxis *TRsnSparseHandler::CheckAxisType(Int_t dim)
 //______________________________________________________________________________
 void TRsnSparseHandler::SetAxisFragments(Int_t dim, const TArrayI &array)
 {
+  if (fGroup) {
+    Warning("SetAxisFragments", "group '%s' with fragments already exist", fGroup->GetName());
+    return;
+  }
   TAxis *dummy = CheckAxisType(dim);
   if (!dummy) return;
 
   if (fDimFragments != -1)
-    Printf("axis[%d]('%s') reset previous type Fragments", fDimFragments, GetAxis(fDimFragments)->GetName());
+    Printf("axis[%d]('%s') reset from previous type Fragments", fDimFragments, GetAxis(fDimFragments)->GetName());
 
   fDimFragments = dim;
   SafeDelete(fBinFragments);
@@ -138,7 +165,7 @@ void TRsnSparseHandler::SetAxisElement(Int_t dim)
   if (!dummy) return;
 
   if (fDimElement != -1)
-    Printf("axis[%d]('%s') reset previous type Element", fDimElement, GetAxis(fDimElement)->GetName());
+    Printf("axis[%d]('%s') reset from previous type Element", fDimElement, GetAxis(fDimElement)->GetName());
 
   fDimElement = dim;
 }
@@ -161,7 +188,7 @@ void TRsnSparseHandler::SetAxisRangeUser(Int_t dim, Double_t ufirst, Double_t ul
 //______________________________________________________________________________
 TRsnGroup *TRsnSparseHandler::MakeGroupFragments(const char *gname, const char *gtitle)
 {
-  // check fragments
+  // check array (bins) of fragments
   TAxis *dummy = GetAxis(fDimFragments);
   if (!dummy || !fBinFragments) return 0;
 
@@ -179,28 +206,22 @@ TRsnGroup *TRsnSparseHandler::MakeGroupFragments(const char *gname, const char *
     }
   }
 
-  // make group of fragments
-  //  SafeDelete(fGroup); // potrebne (delete vsetky fragmnts and elements) ?!
-  // TODO if (fGroup) ????
-  //
-  // gname = "PT" // !!! a zarove funkcia TryRename (z PT urobi latex p_t a jednotky ako title)
-  // samotne fragmenty budu generovat meno a title z group name a title
-  fGroup = new TRsnGroup(gname, gtitle);
+  // make group with fragments
+  if (fGroup) Warning("MakeGroupFragments", "replacing existing group '%s'", fGroup->GetName());
+  fGroup = new TRsnGroup(gname ? gname : dummy->GetName(), gtitle);
   TRsnFragment *fragment;
-  SetBit(kLockAxes); // TODO alebo lockovat az po pridani elementoch ?! t.j. aj range alebo extra lock na range ?
-
   for (Int_t i = 0; i < size; i++) {
     first = fBinFragments->At(i);
     last  = fBinFragments->At(size+i);
     fragment = fGroup->MakeFragment(dummy->GetBinLowEdge(first), dummy->GetBinUpEdge(last));
-    Printf("([%03d] = %03d, [%03d] = %03d)  %d \t (%f, %f) %f  \t %.4f", i, first, size+i, last, last-first,
-           fragment->GetMin(), fragment->GetMax(), fragment->GetMean(), fragment->GetWidth());
+    Printf("%s[%03d]   [%03d, %03d] |%d|   (%f, %f) |%f| \t %f",
+           fGroup->GetName(), i, first, last, last-first,
+           fragment->GetMin(), fragment->GetMax(), fragment->GetWidth(), fragment->GetMean());
   }
-
   return fGroup;
 }
 //______________________________________________________________________________
-void TRsnSparseHandler::AddFragmentElement(const THnBase *sparse, const char *tag) const
+void TRsnSparseHandler::AddFragmentElement(const THnBase *sparse, const char *tagname)
 {
   if (!sparse || !fAxes) return;
   if (!fGroup || !fBinFragments || (fDimFragments == -1)) {
@@ -212,7 +233,7 @@ void TRsnSparseHandler::AddFragmentElement(const THnBase *sparse, const char *ta
     return;
   }
 
-  // compare dummy and sparse axes
+  // check all dummy and sparse axes
   if (sparse->GetNdimensions() != fAxes->GetSize()) {
     Error("AddFragmentElement", "different dimension of sparse");
     return;
@@ -233,6 +254,8 @@ void TRsnSparseHandler::AddFragmentElement(const THnBase *sparse, const char *ta
     }
   }
 
+  SetBit(kLockAxes); // no more SetAxisSomething
+
   // range
   for (Int_t dim = 0; dim < fAxes->GetSize(); dim++) {
     axis  = sparse->GetAxis(dim);
@@ -243,28 +266,30 @@ void TRsnSparseHandler::AddFragmentElement(const THnBase *sparse, const char *ta
       axis->SetRange(0, 0);                                // reset axis range
   }
 
+  // element
   Bool_t save = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  TRsnFragment *fragment;
   Int_t first, last, size = fBinFragments->GetSize()/2;
+  TRsnFragment *fragment;
+  TH1 *his;
+  TString tagName(tagname);
+  if (tagName.IsWhitespace())
+    tagName = TString::Format("%s_%s", sparse->GetName(), sparse->GetAxis(fDimElement)->GetName());
   axis = sparse->GetAxis(fDimFragments);
   for (Int_t i = 0; i < size; i++) {
     first = fBinFragments->At(i);
     last  = fBinFragments->At(size+i);
-    axis->SetRange(first, last); // range for current fragment
-
+    axis->SetRange(first, last); // current fragment range
+    his = sparse->Projection(fDimElement, "E");
     fragment = fGroup->FragmentAt(i);
-    if (!fragment) continue;
-    TH1 *histo = sparse->Projection(fDimElement, "E");
-
-    Printf("%s, %s", histo->GetName(), sparse->GetName());
-    // TODO TryRename histo
-    // histo->SetTitle("p_t (min,max)");
-    fragment->AddElement(histo, tag ? tag : sparse->GetName());
+    fragment->AddElement(his, tagName.Data());
+    Printf("%s[%03d]   (%f, %f) \t '%s' '%s' \t %d",
+           fGroup->GetName(), i, fragment->GetMin(), fragment->GetMax(),
+           tagName.Data(), his->GetName(), (Int_t)his->GetEntries());
+    Printf("%s", his->GetTitle());
   }
 
-  Printf("pridal som %d elementov", size);
   TH1::AddDirectory(save);
 }
 
@@ -280,8 +305,11 @@ Bool_t TRsnSparseHandler::CheckConsistentFragments(const TRsnGroup *group, const
   TRsnFragment *fragment;
   Bool_t precision = !(axis->IsVariableBinSize());
   while ((fragment = (TRsnFragment *)next())) {
-    Int_t binMin = axis->FindFixBin(fragment->GetMean() - 0.49*fragment->GetWidth());
-    Int_t binMax = axis->FindFixBin(fragment->GetMean() + 0.49*fragment->GetWidth());
+    //    Int_t binMin = axis->FindFixBin(fragment->GetMean() - 0.49*fragment->GetWidth());
+    //    Int_t binMax = axis->FindFixBin(fragment->GetMean() + 0.49*fragment->GetWidth());
+    Int_t binMin = axis->FindFixBin(fragment->GetMin()+0.00001*fragment->GetWidth());
+    Int_t binMax = axis->FindFixBin(fragment->GetMax()-0.0001);
+    Printf("%d, %d", binMin, binMax);
     if ((binMin == 0) || (binMin == (axis->GetNbins() + 1))) return kFALSE; // under/over
     if ((binMax == 0) || (binMax == (axis->GetNbins() + 1))) return kFALSE;
     if (!TRsnUtils::AreEqual(axis->GetBinLowEdge(binMin), fragment->GetMin(), precision)) return kFALSE;

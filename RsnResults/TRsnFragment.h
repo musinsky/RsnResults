@@ -5,7 +5,7 @@
 #ifndef RSNFRAGMENT_H
 #define RSNFRAGMENT_H
 
-#include <TObject.h>
+#include <TObjArray.h>
 
 class TRsnGroup;
 
@@ -22,6 +22,7 @@ public:
   Double_t      GetWidth() const { return TMath::Abs(fMax-fMin); }
   TRsnGroup    *GetGroup() const { return fGroup; }
   TObjArray    *GetListOfElements() const { return fElements; }
+  Int_t         GetNElements() const { return fElements->GetEntries(); } // no fast
   static TList *GetListOfAllElements();
 
   virtual Int_t  Compare(const TObject *obj) const;

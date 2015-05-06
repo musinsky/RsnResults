@@ -55,7 +55,7 @@ void TRsnGroup::Print(Option_t *option) const
   for (Int_t i = 0; i < fFragments->GetEntriesFast(); i++) {
     TRsnFragment *frag = (TRsnFragment *)fFragments->At(i);
     if (frag)
-      printf("[%02d]%-*.*s", i, 2*cw-4, 2*cw-5, frag->GetName());
+      printf("[%02d]%-*.*s", i, 2*cw-4, 2*cw-5, frag->GetGroup()->GetName());
     else {
       printf("[%02d]none\n", i);
       continue;

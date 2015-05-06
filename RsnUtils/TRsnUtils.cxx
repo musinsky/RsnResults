@@ -116,6 +116,7 @@ void TRsnUtils::RangeFragmentsPrint(const TH1 *h, const TArrayI array)
     last  = array[size+i];
     low   = axis->GetBinLowEdge(first);
     up    = axis->GetBinUpEdge(last);
+    // TODO same print as in sparse handler
     Printf("([%03d] = %03d, [%03d] = %03d)  %d \t (%f, %f) %f  \t %.4f", i, first, size+i, last,
            last-first, low, up, (low+up)/2.0, up-low);
   }
