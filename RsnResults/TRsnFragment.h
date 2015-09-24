@@ -22,7 +22,7 @@ public:
   Double_t      GetWidth() const { return TMath::Abs(fMax-fMin); }
   TRsnGroup    *GetGroup() const { return fGroup; }
   TObjArray    *GetListOfElements() const { return fElements; }
-  Int_t         GetNElements() const { return fElements->GetEntries(); } // no fast
+  Int_t         GetNElements() const { return fElements ? fElements->GetEntries() : -1; } // no fast
   static TList *GetListOfAllElements();
 
   virtual Int_t  Compare(const TObject *obj) const;

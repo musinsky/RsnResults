@@ -287,7 +287,7 @@ void TRsnSparseHandler::AddFragmentElement(const THnBase *sparse, const char *ta
     Printf("%s[%03d]   (%f, %f) \t '%s' '%s' \t %d",
            fGroup->GetName(), i, fragment->GetMin(), fragment->GetMax(),
            tagName.Data(), his->GetName(), (Int_t)his->GetEntries());
-    Printf("%s", his->GetTitle());
+    //    Printf("%s", his->GetTitle());
   }
 
   TH1::AddDirectory(save);
