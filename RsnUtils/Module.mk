@@ -1,23 +1,17 @@
 # module for RsnUtils
 # Author: Jan Musinsky
-# Date:   2013-11-14
+# Date:   2015-10-02
 
 MODULE	= RsnUtils
 MODDIR	= RsnUtils
 FILES	= TRsnUtils
 
-LNKDEF	= $(MODDIR)/$(LNKFILE).$(HdrSuf)
-SRCS	= $(patsubst %,$(MODDIR)/%.$(SrcSuf),$(FILES))
-HDRS	= $(SRCS:.$(SrcSuf)=.$(HdrSuf))
-DICT	= $(OBJDIR)/$(MODDIR)/$(DICTPREFIX)$(MODULE).$(SrcSuf)
-DICTH	= $(DICT:.$(SrcSuf)=.$(HdrSuf))
-DICTO	= $(DICT:.$(SrcSuf)=.$(ObjSuf))
-OBJS	= $(patsubst %.$(SrcSuf),$(OBJDIR)/%.$(ObjSuf),$(SRCS))
-MODLIB	= $(LIBDIR)/$(LIBPREFIX)$(MODULE).$(DllSuf)
-
-RSNUTILS	:= $(OBJS) $(DICT) $(DICTH) $(DICTO)
-ifeq ($(MAKECMDGOALS),distclean)
-RSNUTILS	+= $(MODLIB) $(subst $(MODDIR)/,$(INCDIR)/,$(HDRS)) # '/' important
+RSNUTILSDOPT	:= $(LIBPREFIX)$(MODULE)
+RSNUTILSCLEAN	:= $(OBJS) $(DICT) $(DICTH) $(DICTO)
+ifneq (,$(findstring distclean,$(MAKECMDGOALS)))
+RSNUTILSCLEAN	+= $(MODLIB) $(subst $(MODDIR)/,$(INCDIR)/,$(HDRS)) # '/' important
+RSNUTILSCLEAN	+= $(subst $(DllSuf),$(MAPSUF),$(MODLIB))
+RSNUTILSCLEAN	+= $(subst .$(DllSuf),*.$(PCMSUF),$(MODLIB))
 endif
 
 # used in the main Makefile
@@ -26,6 +20,10 @@ ALLHDRS		+= $(HDRS)
 ALLDIST		+= $(SRCS) $(HDRS) $(LNKDEF) $(MODDIR)/$(MODMAKEFILE)
 ALLDEPEND	+= $(SRCS)
 
+$(DICT)DictOpt	= $(call DictOpt,$(RSNUTILSDOPT))
+#$(MODLIB)Extra	= # nothing yet
+
+# local rules
 $(MODDIR):	$(MODLIB)
 
 $(MODLIB):	$(OBJS) $(DICTO)
@@ -33,11 +31,11 @@ $(MODLIB):	$(OBJS) $(DICTO)
 $(DICT):	$(HDRS) $(LNKDEF)
 
 clean-$(MODDIR):
-		@rm -fv $(RSNUTILS)
+		@rm -fv $(RSNUTILSCLEAN)
 
 clean:		clean-$(MODDIR)
 
 distclean-$(MODDIR):
-		@rm -fv $(RSNUTILS)
+		@rm -fv $(RSNUTILSCLEAN)
 
 distclean:	distclean-$(MODDIR)

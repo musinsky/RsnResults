@@ -1,23 +1,17 @@
 # module for RsnResults
 # Author: Jan Musinsky
-# Date:   2014-10-15
+# Date:   2015-10-02
 
 MODULE	= RsnResults
 MODDIR	= RsnResults
 FILES	= TRsnResults TRsnFragment TRsnGroup TGraphRsnErrors TRsnSparseHandler
 
-LNKDEF	= $(MODDIR)/$(LNKFILE).$(HdrSuf)
-SRCS	= $(patsubst %,$(MODDIR)/%.$(SrcSuf),$(FILES))
-HDRS	= $(SRCS:.$(SrcSuf)=.$(HdrSuf))
-DICT	= $(OBJDIR)/$(MODDIR)/$(DICTPREFIX)$(MODULE).$(SrcSuf)
-DICTH	= $(DICT:.$(SrcSuf)=.$(HdrSuf))
-DICTO	= $(DICT:.$(SrcSuf)=.$(ObjSuf))
-OBJS	= $(patsubst %.$(SrcSuf),$(OBJDIR)/%.$(ObjSuf),$(SRCS))
-MODLIB	= $(LIBDIR)/$(LIBPREFIX)$(MODULE).$(DllSuf)
-
-RSNRESULTS	:= $(OBJS) $(DICT) $(DICTH) $(DICTO)
-ifeq ($(MAKECMDGOALS),distclean)
-RSNRESULTS	+= $(MODLIB) $(subst $(MODDIR)/,$(INCDIR)/,$(HDRS)) # '/' important
+RSNRESULTSDOPT	:= $(LIBPREFIX)$(MODULE)
+RSNRESULTSCLEAN	:= $(OBJS) $(DICT) $(DICTH) $(DICTO)
+ifneq (,$(findstring distclean,$(MAKECMDGOALS)))
+RSNRESULTSCLEAN	+= $(MODLIB) $(subst $(MODDIR)/,$(INCDIR)/,$(HDRS)) # '/' important
+RSNRESULTSCLEAN	+= $(subst $(DllSuf),$(MAPSUF),$(MODLIB))
+RSNRESULTSCLEAN	+= $(subst .$(DllSuf),*.$(PCMSUF),$(MODLIB))
 endif
 
 # used in the main Makefile
@@ -26,6 +20,10 @@ ALLHDRS		+= $(HDRS)
 ALLDIST		+= $(SRCS) $(HDRS) $(LNKDEF) $(MODDIR)/$(MODMAKEFILE)
 ALLDEPEND	+= $(SRCS)
 
+$(DICT)DictOpt	= $(call DictOpt,$(RSNRESULTSDOPT))
+#$(MODLIB)Extra	= # nothing yet
+
+# local rules
 $(MODDIR):	$(MODLIB)
 
 $(MODLIB):	$(OBJS) $(DICTO)
@@ -33,11 +31,11 @@ $(MODLIB):	$(OBJS) $(DICTO)
 $(DICT):	$(HDRS) $(LNKDEF)
 
 clean-$(MODDIR):
-		@rm -fv $(RSNRESULTS)
+		@rm -fv $(RSNRESULTSCLEAN)
 
 clean:		clean-$(MODDIR)
 
 distclean-$(MODDIR):
-		@rm -fv $(RSNRESULTS)
+		@rm -fv $(RSNRESULTSCLEAN)
 
 distclean:	distclean-$(MODDIR)

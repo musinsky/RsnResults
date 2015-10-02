@@ -1,21 +1,29 @@
 # Top level Makefile for RsnResults
 # Author: Jan Musinsky
-# Date:   2014-11-18
+# Date:   2015-10-02
 
 include $(ROOTSYS)/etc/Makefile.arch
 HdrSuf		= h
-CXXFLAGS	+= -Wshadow -Woverloaded-virtual
-CXXFLAGS	+= -std=c++11 #-Wno-deprecated-declarations
-CXXFLAGS	+= -Wextra -Wformat=2 -Wreorder -Wpedantic #-Wno-vla -Wno-long-long
+
 ifeq ($(MAKECMDGOALS),debug)
 CXXFLAGS	+= -DDEBUG
 endif
+CXXFLAGS	+= -Wshadow -Woverloaded-virtual
+CXXFLAGS	+= -Wextra -Wformat=2 -Wreorder -Wpedantic
+ifeq ($(ROOTCINT),) # ROOT6
+CXXFLAGS	+= -Wdeprecated-declarations # enforce to enable
+DICTCXXFLAGS	= -Wno-format-nonliteral # dict warning (enabled by format=2)
+else
+CXXFLAGS	+= -std=c++11
+endif
 
-MODULES		= RsnResults RsnUtils
+MODULES		= RsnUtils RsnResults
 
 MODMAKEFILE	= Module.mk
 LNKFILE		= LinkDef
 DICTPREFIX	= G__
+MAPSUF		= rootmap
+PCMSUF		= pcm
 INCDIR		= include
 OBJDIR		= build
 LIBDIR		= lib
@@ -25,6 +33,15 @@ MAKEDEPEND	= rmkdepend
 DEPENDFILE	= $(OBJDIR)/Make-depend
 NODEPEND	= clean distclean distsrc showbuild
 
+LNKDEF		= $(MODDIR)/$(LNKFILE).$(HdrSuf)
+SRCS		= $(patsubst %,$(MODDIR)/%.$(SrcSuf),$(FILES))
+HDRS		= $(SRCS:.$(SrcSuf)=.$(HdrSuf))
+DICT		= $(OBJDIR)/$(MODDIR)/$(DICTPREFIX)$(MODULE).$(SrcSuf)
+DICTH		= $(DICT:.$(SrcSuf)=.$(HdrSuf))
+DICTO		= $(DICT:.$(SrcSuf)=.$(ObjSuf))
+OBJS		= $(patsubst %.$(SrcSuf),$(OBJDIR)/%.$(ObjSuf),$(SRCS))
+MODLIB		= $(LIBDIR)/$(LIBPREFIX)$(MODULE).$(DllSuf)
+
 # all
 ALLHDRS		:=
 ALLLIBS		:=
@@ -32,8 +49,15 @@ ALLDIST		:= Makefile
 ALLDEPEND	:=
 
 # verbatim variables
+DictOpt		= -s $(LIBDIR)/$1.$(DllSuf) -rml $1.$(DllSuf) -rmf $(LIBDIR)/$1.$(MAPSUF)
+
+# define is just syntax to create (easier) variables with multi-line values
 define checkdir
 @if [ ! -d $@ ]; then mkdir -p $(dir $@); fi
+endef
+
+define checkdir1
+@if [ ! -d $1 ]; then mkdir -p $1; fi
 endef
 
 define emptyfile
@@ -46,26 +70,31 @@ endef
 .PRECIOUS: $(INCDIR)/%.$(HdrSuf) # preserve intermediate files
 
 $(OBJDIR)/%.$(ObjSuf) : %.$(SrcSuf)
-			$(checkdir)
-			@$(CXX) $(CXXFLAGS) -I$(INCDIR) -c $< -o $@
-			@echo -e "$@ done"
+		$(checkdir)
+		@$(CXX) $(CXXFLAGS) -I$(INCDIR) -c $< -o $@
+		@echo -e "$@ done"
 
 $(DICTPREFIX)%.$(SrcSuf) :
-			@echo "Generating dictionary $@ ..."
-			$(checkdir)
-			@$(ROOTCINT) -f $@ -c -I$(INCDIR) $^
+		@echo "Generating dictionary $@ ..."
+		$(checkdir)
+ifeq ($(ROOTCINT),)
+		$(call checkdir1,$(LIBDIR)) # needed for pcm and rootmap
+		@$(ROOTCLING) -f $@ $(call $@DictOpt) -c -I$(INCDIR) $^
+else
+		@$(ROOTCINT) -f $@ -c -I$(INCDIR) $^
+endif
 
 $(DICTPREFIX)%.$(ObjSuf) : $(DICTPREFIX)%.$(SrcSuf)
-			$(checkdir)
-			@$(CXX) $(CXXFLAGS) -I$(INCDIR) -I. -c $< -o $@
-			@echo -e "$@ done"
+		$(checkdir)
+		@$(CXX) $(CXXFLAGS) $(DICTCXXFLAGS) -I$(INCDIR) -I. -c $< -o $@
+		@echo -e "$@ done"
 
 $(LIBDIR)/$(LIBPREFIX)%.$(DllSuf) :
-			$(checkdir)
-			@rm -f $@
-			@$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@
-			@chmod 555 $@
-			@echo "==> $@ done"
+		$(checkdir)
+		@rm -f $@
+		@$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(call $@Extra)
+		@chmod 555 $@
+		@echo "==> $@ done"
 
 # targets
 all:		libs
@@ -93,18 +122,25 @@ distsrc:
 
 showbuild:
 		@echo "ROOTSYS        = $(realpath $(ROOTSYS))"
+		@echo "ROOT VERSION   = $(shell $(RC) --version)"
 		@echo "PLATFORM       = $(PLATFORM)"
 		@echo "ARCH           = $(ARCH)"
 		@echo ""
 		@echo "CXX            = $(CXX)"
+		@echo "CXX VERSION    = $(shell $(CXX) -dumpversion)"
 		@echo "CXXFLAGS       = $(CXXFLAGS)"
+		@echo "DICTCXXFLAGS   = $(DICTCXXFLAGS)"
 		@echo ""
 		@echo "LD             = $(LD)"
 		@echo "SOFLAGS        = $(SOFLAGS)"
 		@echo "LDFLAGS        = $(LDFLAGS)"
 		@echo ""
 		@echo "INCDIR         = $(INCDIR)"
-		@echo "ROOTCINT       = $(ROOTCINT)"
+ifeq ($(ROOTCINT),)
+		@echo "ROOTDICT       = $(ROOTCLING)"
+else
+		@echo "ROOTDICT       = $(ROOTCINT)"
+endif
 		@echo "MAKEDEPEND     = $(MAKEDEPEND)"
 		@echo ""
 		@echo "The list of what to be built"
