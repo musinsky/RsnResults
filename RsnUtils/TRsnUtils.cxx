@@ -12,7 +12,7 @@ TArrayI TRsnUtils::RangeFragments(const TH1 *h, Double_t range, Double_t min, Do
                                   Bool_t round)
 {
   if (!h) return 0;
-  TAxis *axis = h->GetXaxis();
+  const TAxis *axis = h->GetXaxis();
 
   Int_t bmin = 1;
   Int_t bmax = axis->GetNbins();
@@ -68,7 +68,7 @@ TArrayI TRsnUtils::RangeFragments(const TH1 *h, Double_t range, Double_t min, Do
 void TRsnUtils::RangeFragmentsAdd(const TH1 *h, TArrayI &array, Double_t range, Double_t max)
 {
   if (!h) return;
-  TAxis *axis = h->GetXaxis();
+  const TAxis *axis = h->GetXaxis();
 
   Int_t size = array.GetSize()/2;
   Double_t min = (size) ? axis->GetBinUpEdge(array[2*size-1]) : axis->GetXmin();
@@ -104,7 +104,7 @@ void TRsnUtils::RangeFragmentsAdd(const TH1 *h, TArrayI &array, Double_t range, 
 void TRsnUtils::RangeFragmentsPrint(const TH1 *h, const TArrayI array)
 {
   if (!h) return;
-  TAxis *axis = h->GetXaxis();
+  const TAxis *axis = h->GetXaxis();
 
   Int_t size = array.GetSize()/2;
   Int_t first, last = 0;

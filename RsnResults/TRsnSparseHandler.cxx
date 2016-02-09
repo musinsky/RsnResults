@@ -284,9 +284,9 @@ void TRsnSparseHandler::AddFragmentElement(const THnBase *sparse, const char *ta
     his = sparse->Projection(fDimElement, "E");
     fragment = fGroup->FragmentAt(i);
     fragment->AddElement(his, tagName.Data());
-    Printf("%s[%03d]   (%f, %f) \t '%s' '%s' \t %d",
+    Printf("%s[%03d]   (%f, %f) \t '%s' '%s' \t %g",
            fGroup->GetName(), i, fragment->GetMin(), fragment->GetMax(),
-           tagName.Data(), his->GetName(), (Int_t)his->GetEntries());
+           tagName.Data(), his->GetName(), his->GetEntries());
     //    Printf("%s", his->GetTitle());
   }
 
